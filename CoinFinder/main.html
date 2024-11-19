@@ -8,14 +8,17 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="text">
-    <h1>CoinFinder</h1>
-    <p>Aktueller Wert: <span id="value">0</span>€</p>
+<div id="mainContainer">
+    <div class="container" id="textContainer">
+        <h1>CoinFinder</h1>
+        <p>Aktueller Wert: <span id="value">0</span>€</p>
+    </div>
+    <div class="container" id="videoContainer">
+        <video id="video" width="720" height="540" autoplay muted loop></video>
+        <canvas id="canvas" width="720" height="540"></canvas>
+    </div>
 </div>
-<div class="container">
-    <video id="video" height="1920" width="1080" autoplay muted loop></video>
-    <canvas id="canvas" height="1920" width="1080"></canvas>
-</div>
+
 <script src="script.js"></script>
 </body>
 </html>

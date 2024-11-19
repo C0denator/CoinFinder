@@ -1,25 +1,63 @@
+*{
+    box-sizing: border-box;
+}
+
 html, body {
-    padding: 0;
-    margin: 0;
+    /*Background color*/
+    background-color: #18204d;
+
+    /*Text color*/
+    color: #ffffff;
+}
+
+#mainContainer{
+    position: relative;
+    width: 100vw;
+    height: 100dvh;
+
+    display: flex;
+    flex-direction: column;
+
 }
 
 .container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
 }
+
+#textContainer{
+}
+
+#videoContainer{
+    position: relative;
+    height: 100%;
+    width: 100%;
+
+    flex-grow: 1;
+
+    align-items: center;
+    justify-content: center;
+    display: flex;
+
+}
+
 
 #video, #canvas {
-    position: absolute;
-    top: 0;
+    height: 100%;
+    width: 100%;
     left: 0;
-    width: 95%;
-    height: 95%;
-    object-fit: fill;
+    top: 0;
+    position: absolute;
+    aspect-ratio: inherit;
+    object-fit: contain;
 }
 
-#canvas {
-    border: 1em solid red; /* Roter Rahmen um das Canvas für Debugging */
+#mainContainer{
+    border: 0.5em solid #ff0000;
 }
+
+#videoContainer{
+    border: 0.5em solid blue;
+}
+
+/*#canvas {
+    border: 0.5em solid green;
+}*/

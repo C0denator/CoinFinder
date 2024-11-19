@@ -1,27 +1,33 @@
 const video = document.getElementById('video');
 const outputCanvas = document.getElementById('canvas');
-
-let cv = window.cv;
+const videoContainer = document.getElementById('videoContainer');
 
 // Webcam stream erhalten
 navigator.mediaDevices.getUserMedia({
-    video: { deviceId: 'USB Kamera ID' }, // Gib die spezifische Kamera-ID hier an
+    video: true,
     audio: false
 }).then(stream => {
     video.srcObject = stream;
     video.onloadedmetadata = () => {
-        video.play();
-        requestAnimationFrame(mainLoop);
+        video.play()
 
-        //print video size
-        console.log("Video size: " + video.videoWidth + "x" + video.videoHeight);
+        //print camera stats
+        console.log("Camera resolution: " + video.videoWidth + "x" + video.videoHeight);
+        console.log("Camera frame rate: " + stream.getVideoTracks()[0].getSettings().frameRate+ " fps");
+        console.log("Camera id: " + stream.getVideoTracks()[0].getSettings().deviceId);
+
+        //set the aspect ratio of the video to the div
+        //videoContainer.style.aspectRatio = (video.videoWidth).toString() + " / " + (video.videoHeight).toString();
+
+        //start the main loop
+        requestAnimationFrame(mainLoop);
     };
 }).catch(error => {
     console.error('Error accessing the camera: ', error);
 });
 
 function mainLoop() {
-    if (typeof cv === 'undefined') {
+    if (typeof window.cv === 'undefined') {
         console.error('OpenCV.js not loaded');
         return;
     }
@@ -70,6 +76,9 @@ function ShowFrame(inputMat){
         console.error('OpenCV.js not loaded');
         return;
     }
+
+    //print the size of the input matrix
+    console.log("Input size: " + inputMat.cols + "x" + inputMat.rows);
 
     cv.imshow('canvas', inputMat);
 
