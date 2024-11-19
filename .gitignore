@@ -48,3 +48,25 @@ coverage/
 
 # NPM-Pakete global gelinkt
 *.tgz
+
+# LaTeX generierte Dateien
+*.aux
+*.bbl
+*.blg
+*.brf
+*.idx
+*.ilg
+*.ind
+*.lof
+*.log
+*.lot
+*.out
+*.toc
+*.gz
+*.nav
+*.snm
+*.synctex(busy)
+*.synctex.gz
+*.tdo
+*.upa
+*.upb

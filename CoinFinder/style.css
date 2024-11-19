@@ -12,12 +12,11 @@ html, body {
 
 #mainContainer{
     position: relative;
-    width: 100vw;
-    height: 100dvh;
+    width: 97vw;
+    height: 97dvh;
 
     display: flex;
     flex-direction: column;
-
 }
 
 .container {

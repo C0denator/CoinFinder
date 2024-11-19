@@ -1,0 +1,101 @@
+\documentclass{article}
+\usepackage[a4paper, left=3cm, right=3cm, top=2.5cm, bottom=2.5cm]{geometry} %Seitenränder
+\usepackage[utf8]{inputenc} %Umlaute
+\usepackage[T1]{fontenc} %Umlaute 
+\usepackage[colorlinks=true, linkcolor=black, urlcolor=blue]{hyperref} %Links
+\usepackage[ngerman]{babel} % für Deutsche Silbentrennung
+\input{Listings.tex} %Code-Listings für JavaScript (ausgelagert in JS_listings.tex)
+
+\renewcommand{\familydefault}{\sfdefault} %Schriftart auf serifenlos ändern
+\renewcommand{\baselinestretch}{1.15} %Zeilenabstand
+\setlength{\parskip}{0.8em} %Absatzabstand
+\title{Devlog - Computer Vision mit openCV.js}
+\author{Mattis Thieme}
+\date{November 2024}
+
+\begin{document}
+
+\maketitle
+
+\renewcommand*\contentsname{Inhaltsverzeichnis} %Überschrift des Inhaltsverzeichnisses ändern
+\tableofcontents
+
+\section{Einleitung und Motivation}
+(Einleitung und Motivation)
+
+In diesem Devlog möchte ich einen Überblick über die geläufigen Methoden der Kreiserkennung und Kreisklassifizierung aufzeigen, von einfachen und leicht verständlichen Verfahren wie der Geometrie- oder Farberkennung, bis hin zu den mächtigen Werkzeugen der Musteranalyse und Objekterkennung. 
+
+Alle Ansätze werde ich dabei stets an einem Beispiel demonstrieren. Damit Du leicht alles auf deinem eigenen Rechner selber ausprobieren kannst, testen wir alle Methoden an Hand von Euromünzen. Warum ausgerechnet Euromünzen? Sie eignen sich perfekt: sie sind alle rund, haben klar festgelegte Farben und Größen und fast jeder sollte welche zur Hand haben. Im Laufe des Devlogs werden wir somit eine Webanwendung entwickeln, welche auf eine angeschlossene Webkamera zugreift, die Bilddaten nach Münzen durchsucht, und jede gefundene Münze ihren 'Wert' zuteilt. Am Ende wird dann anschließend der Gesamtbetrag aller Münzen im Bild angezeigt. 
+
+\section{Wahl der Technologien}
+Wenn Probleme im Bereich der Bildverarbeitung gelöst werden sollen, fällt die Wahl häufig auf OpenCV. Und das nicht ohne Grund: OpenCV bietet ein rießiges Spektrum an Funktionen und Algorithmen, von einfachen Bildoperationen hin zu ausgereiften Algorithmen der Gesichtserkennung, Bildsegmentierung und Objekterkennung. Auch Maschinelles Lernen und Deep Learning sind in OpenCV integriert.
+
+Die Wahl der Bibliothek wäre somit schnell getroffen, wenn wir nicht noch ein weiteres Kriterium hätten: die Webanwendung. Da OpenCV jedoch ursprünglich in C++ geschrieben ist, ist das primäre Interface, mit welchem auf die Funktionaltiätenzugegriffen wird, auch in C++ verfasst. Es gibt zwar mit Java und Python auch noch weitere alternative Schnittstellen, jedoch soll unsere Webanwendung, wie bereits oben erwähnt, nicht auf einem Server laufen, sondern direkt im Browser des Clients. Die Lösung: openCV.js.
+
+Als relativ neuer Bestandteil des openCV-Projektes, ist openCV.js eine JavaScript-Portierung der OpenCV-Bibliothek. Sie ermöglicht es, OpenCV-Funktionen direkt im Browser auszuführen, ohne dass der Nutzer eine zusätzliche Software installieren muss. Somit können wir die volle Bandbreite der OpenCV-Funktionen nutzen, ohne auf die Vorteile einer Webanwendung verzichten zu müssen.
+
+\section{Integration in Webanwendung}
+\subsection{openCV.js}
+Als aller erstes brauchen wir natürlich eine aktuelle Version von openCV.js. Diese können wir direkt von der offiziellen openCV-Webseite herunterladen:
+
+\href{https://docs.opencv.org/4.10.0/opencv.js}{https://docs.opencv.org/4.10.0/opencv.js}
+
+Speichere die Datei in deinem Projektverzeichnis und binde sie in deiner HTML-Datei wie eine normale JavaScript-Datei ein:
+
+\begin{lstlisting}[style=HTML]
+<script src="opencv.js"></script>
+\end{lstlisting}
+
+
+\subsection{Grundaufbau der Webseite}
+\subsection{Grundlegende openCV Methoden}
+Codebeispiel:
+
+\begin{lstlisting}[style=JavaScript]
+if(!result.wasPinDetected || (coreStartPoint === undefined || coreEndPoint === undefined)){
+    if(debug){
+        console.log("Kern nicht gefunden");
+    }
+    amountOfUnknown++;
+} else { //Wenn ein Kern gefunden wurde:
+    //Kern zeichnen und Eckpunkte ermitteln
+    result = DrawCore(guiMat, coreStartPoint, coreEndPoint, 1);
+
+    //Eckpunkte des Rechteckes speichern
+    let leftPoint = result.leftPoint;
+    let rightPoint = result.rightPoint;
+    let topPoint = result.topPoint;
+    let bottomPoint = result.bottomPoint;
+
+    //den Bildbereich definieren, in dem sich der Zylinderkern befindet
+    let pinScanArea = new cv.Rect(leftPoint.x, topPoint.y, Math.abs(rightPoint.x - leftPoint.x), Math.abs(bottomPoint.y - topPoint.y));
+    //scanArea in der Ausgabe-Matrix einzeichnen
+    if (debug) {
+        cv.rectangle(guiMat, new cv.Point(pinScanArea.x, pinScanArea.y), new cv.Point(pinScanArea.x + pinScanArea.width, pinScanArea.y + pinScanArea.height), new cv.Scalar(255, 255, 255, 255), 5);
+    }
+
+    result = currentCore.CheckPins(inputMat, guiMat, pinScanArea); //Stifte prüfen
+}
+\end{lstlisting}
+
+\section{Kreiserkennung}
+\subsection{Circle Hough Transform}
+\subsection{Parameter und Einstellungen}
+
+\section{Kreis-Klassifizierung}
+\subsection{Geometrie}
+\subsection{Farbanalyse}
+\subsubsection{Durchschnitt und Helligkeit}
+\subsubsection{Histogrammvergleich}
+\subsubsection{Farbverlauf-Analyse}
+\subsection{Musteranalyse}
+\subsection{Objekterkennung}
+\subsection{Machinelles Lernen}
+
+\section{Limitationen}
+
+\section{Fazit}
+Die Möglichkeit von openCV.js, OpenCV-Funktionen direkt im Browser des Clients auszuführen, eröffnet eine Vielzahl von neuen Anwendungsmöglichkeiten. Rechenintensive Bildverarbeitungsalgorithmen müssen nun nicht mehr auf einem Server laufen, wodurch Kapazitäten frei werden und für andere Aufgaben genutzt werden können. Immer mehr Onlinebesuche finden auf mobilen Geräten statt - die Verwendung der eingebauten Kamera für Bildverarbeitungsaufgaben könnte somit in Zukunft eine wichtige Rolle spielen. 
+(Beispiele einfügen?)
+
+\end{document}
