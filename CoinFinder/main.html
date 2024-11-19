@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="de">
-<script src="opencv_4.10.0.js"></script>
+<script src="lib/opencv_4.10.0.js"></script>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,11 +8,14 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="container">
-    <video id="video" autoplay muted></video>
-    <canvas id="canvas"></canvas>
+<div class="text">
+    <h1>CoinFinder</h1>
+    <p>Aktueller Wert: <span id="value">0</span>€</p>
 </div>
-
+<div class="container">
+    <video id="video" height="1920" width="1080" autoplay muted loop></video>
+    <canvas id="canvas" height="1920" width="1080"></canvas>
+</div>
 <script src="script.js"></script>
 </body>
 </html>

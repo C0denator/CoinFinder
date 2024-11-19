@@ -1,11 +1,7 @@
 const video = document.getElementById('video');
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
+const outputCanvas = document.getElementById('canvas');
 
 let cv = window.cv;
-
-// Wenn das Fenster die Größe ändert, wird das Canvas neu skaliert
-window.addEventListener('resize', resizeCanvas);
 
 // Webcam stream erhalten
 navigator.mediaDevices.getUserMedia({
@@ -15,18 +11,21 @@ navigator.mediaDevices.getUserMedia({
     video.srcObject = stream;
     video.onloadedmetadata = () => {
         video.play();
-        tempCanvas.width = video.videoWidth;
-        tempCanvas.height = video.videoHeight;
-        resizeCanvas();
         requestAnimationFrame(mainLoop);
+
+        //print video size
+        console.log("Video size: " + video.videoWidth + "x" + video.videoHeight);
     };
 }).catch(error => {
     console.error('Error accessing the camera: ', error);
 });
 
-
-
 function mainLoop() {
+    if (typeof cv === 'undefined') {
+        console.error('OpenCV.js not loaded');
+        return;
+    }
+
     //Show red channel
     showRedChannel();
 
@@ -34,54 +33,45 @@ function mainLoop() {
     requestAnimationFrame(mainLoop);
 }
 
-// Passt das Canvas an die Größe des Videos an
-function resizeCanvas() {
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    updateCanvas();
-}
 
-
-
-function updateCanvas() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    // Zeichne auf das Canvas (Beispiel: Ein transparenter Rahmen)
-    ctx.strokeStyle = 'red';
-    ctx.lineWidth = 5;
-    ctx.strokeRect(0, 0, canvas.width, canvas.height);
-}
-
-let tempCanvas = document.createElement('canvas');
-let tempCtx = tempCanvas.getContext('2d');
 function showRedChannel() {
-    if (typeof cv === 'undefined') {
-        console.error('OpenCV.js not loaded');
-        return;
-    }
-
-    tempCtx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
-
-    let frameMat = cv.imread(tempCanvas);
+    let frameMat = GetFrame();
 
     let channels = new cv.MatVector();
 
     cv.split(frameMat, channels);
 
-    showFrame(channels.get(0));
+    ShowFrame(channels.get(0));
 
     //free memory
     channels.delete();
     frameMat.delete();
 }
 
-function showFrame(inputMat){
+let tempCanvas = document.createElement('canvas');
+let tempCtx= tempCanvas.getContext('2d', { willReadFrequently: true });
+function GetFrame(){
+    //set the size of the temp canvas to the size of the output canvas
+    tempCanvas.width = outputCanvas.width;
+    tempCanvas.height = outputCanvas.height;
+
+    //draw the video frame on the temp canvas
+    tempCtx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
+
+    //create a matrix from the temp canvas
+    let frameMat = cv.imread(tempCanvas);
+
+    return frameMat;
+}
+
+function ShowFrame(inputMat){
     //return if openCV is not loaded
     if (typeof cv === 'undefined') {
         console.error('OpenCV.js not loaded');
         return;
     }
 
-    cv.imshow(canvas, inputMat);
+    cv.imshow('canvas', inputMat);
 
     //free memory
     inputMat.delete();
