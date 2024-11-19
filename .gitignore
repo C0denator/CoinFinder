@@ -1,0 +1,50 @@
+# Node.js spezifische Dateien
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+.pnp/
+.pnp.js
+
+# WebStorm spezifische Dateien
+.idea/
+*.iml
+
+# Log-Dateien
+logs/
+*.log
+yarn.lock
+lerna-debug.log
+.DS_Store
+
+# Build-Ausgaben
+dist/
+build/
+out/
+*.min.js
+
+# Test-Ausgaben
+coverage/
+.nyc_output/
+
+# Umgebungsvariablen
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Cache
+.cache/
+.vscode/
+.tmp/
+
+# Linter-Ausgaben
+.eslintcache
+
+# Typescript
+*.tsbuildinfo
+
+# NPM-Pakete global gelinkt
+*.tgz
