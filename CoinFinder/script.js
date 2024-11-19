@@ -2,29 +2,31 @@ const video = document.getElementById('video');
 const outputCanvas = document.getElementById('canvas');
 const videoContainer = document.getElementById('videoContainer');
 
-// Webcam stream erhalten
-navigator.mediaDevices.getUserMedia({
-    video: true,
-    audio: false
-}).then(stream => {
-    video.srcObject = stream;
-    video.onloadedmetadata = () => {
-        video.play()
+window.onload = () => {
+    // Webcam stream erhalten
+    navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: false
+    }).then(stream => {
+        video.srcObject = stream;
+        video.onloadedmetadata = () => {
+            video.play()
 
-        //print camera stats
-        console.log("Camera resolution: " + video.videoWidth + "x" + video.videoHeight);
-        console.log("Camera frame rate: " + stream.getVideoTracks()[0].getSettings().frameRate+ " fps");
-        console.log("Camera id: " + stream.getVideoTracks()[0].getSettings().deviceId);
+            //print camera stats
+            console.log("Camera resolution: " + video.videoWidth + "x" + video.videoHeight);
+            console.log("Camera frame rate: " + stream.getVideoTracks()[0].getSettings().frameRate+ " fps");
+            console.log("Camera id: " + stream.getVideoTracks()[0].getSettings().deviceId);
 
-        //set the aspect ratio of the video to the div
-        //videoContainer.style.aspectRatio = (video.videoWidth).toString() + " / " + (video.videoHeight).toString();
+            //set the aspect ratio of the video to the div
+            //videoContainer.style.aspectRatio = (video.videoWidth).toString() + " / " + (video.videoHeight).toString();
 
-        //start the main loop
-        requestAnimationFrame(mainLoop);
-    };
-}).catch(error => {
-    console.error('Error accessing the camera: ', error);
-});
+            //start the main loop
+            requestAnimationFrame(mainLoop);
+        };
+    }).catch(error => {
+        console.error('Error accessing the camera: ', error);
+    });
+};
 
 function mainLoop() {
     if (typeof window.cv === 'undefined') {

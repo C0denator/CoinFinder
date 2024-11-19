@@ -2,6 +2,7 @@
 \usepackage[a4paper, left=3cm, right=3cm, top=2.5cm, bottom=2.5cm]{geometry} %Seitenränder
 \usepackage[utf8]{inputenc} %Umlaute
 \usepackage[T1]{fontenc} %Umlaute 
+\usepackage{eurosym} %Eurozeichen
 \usepackage[colorlinks=true, linkcolor=black, urlcolor=blue]{hyperref} %Links
 \usepackage[ngerman]{babel} % für Deutsche Silbentrennung
 \input{Listings.tex} %Code-Listings für JavaScript (ausgelagert in JS_listings.tex)
@@ -48,6 +49,88 @@ Speichere die Datei in deinem Projektverzeichnis und binde sie in deiner HTML-Da
 
 
 \subsection{Grundaufbau der Webseite}
+Für unsere Webanwendung benötigen wir zunächst eine simple HTML-Struktur mit mindestens zwei Elementen: einem Video-Element für den Kamerastream und einem Canvas-Element, auf welchem wir die Bildverarbeitungsergebnisse anzeigen können. Beide Elemente sollten idealerweise übereinander liegen und die selbe Größe haben.
+
+Die html-Datei könnte also wie folgt aussehen:
+\begin{lstlisting}[style=HTML]
+    <!DOCTYPE html>
+<html lang="de">
+<script src="lib/opencv_4.10.0.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Player mit Canvas Overlay</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="mainContainer">
+    <div class="container" id="textContainer">
+        <h1>CoinFinder</h1>
+        <p>Aktueller Wert: <span id="value">0</span>€</p>
+    </div>
+    <div class="container" id="videoContainer">
+        <video id="video" width="720" height="540" autoplay muted loop></video>
+        <canvas id="canvas" width="720" height="540"></canvas>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
+\end{lstlisting}
+
+Und die dazugehörige CSS-Datei:
+
+\begin{lstlisting}[style=CSS]
+    *{
+    box-sizing: border-box;
+}
+
+html, body {
+    background-color: #18204d;
+    color: #ffffff;
+}
+
+#mainContainer{
+    position: relative;
+    width: 97vw;
+    height: 97dvh;
+    display: flex;
+    flex-direction: column;
+}
+
+#videoContainer{
+    position: relative;
+    height: 100%;
+    width: 100%;
+
+    flex-grow: 1;
+
+    align-items: center;
+    justify-content: center;
+    display: flex;
+
+}
+
+#video, #canvas {
+    height: 100%;
+    width: 100%;
+    left: 0;
+    top: 0;
+    position: absolute;
+    aspect-ratio: inherit;
+    object-fit: contain;
+}
+
+#mainContainer{
+    border: 0.5em solid #ffa300;
+}
+
+#videoContainer{
+    border: 0.5em solid blue;
+}
+\end{lstlisting}
+
 \subsection{Grundlegende openCV Methoden}
 Codebeispiel:
 

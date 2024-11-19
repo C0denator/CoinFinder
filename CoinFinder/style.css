@@ -3,10 +3,7 @@
 }
 
 html, body {
-    /*Background color*/
     background-color: #18204d;
-
-    /*Text color*/
     color: #ffffff;
 }
 
@@ -14,15 +11,8 @@ html, body {
     position: relative;
     width: 97vw;
     height: 97dvh;
-
     display: flex;
     flex-direction: column;
-}
-
-.container {
-}
-
-#textContainer{
 }
 
 #videoContainer{
@@ -38,7 +28,6 @@ html, body {
 
 }
 
-
 #video, #canvas {
     height: 100%;
     width: 100%;
@@ -50,13 +39,9 @@ html, body {
 }
 
 #mainContainer{
-    border: 0.5em solid #ff0000;
+    border: 0.5em solid #ffa300;
 }
 
 #videoContainer{
     border: 0.5em solid blue;
 }
-
-/*#canvas {
-    border: 0.5em solid green;
-}*/
