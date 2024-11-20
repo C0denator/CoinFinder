@@ -10,6 +10,7 @@
 \renewcommand{\familydefault}{\sfdefault} %Schriftart auf serifenlos ändern
 \renewcommand{\baselinestretch}{1.15} %Zeilenabstand
 \setlength{\parskip}{0.8em} %Absatzabstand
+%\setlength{\parindent}{0pt} %kein Einrücken bei neuem Absatz
 \title{Devlog - Computer Vision mit openCV.js}
 \author{Mattis Thieme}
 \date{November 2024}
@@ -53,7 +54,7 @@ Für unsere Webanwendung benötigen wir zunächst eine simple HTML-Struktur mit 
 
 Die html-Datei könnte also wie folgt aussehen:
 \begin{lstlisting}[style=HTML]
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="de">
 <script src="lib/opencv_4.10.0.js"></script>
 <head>
@@ -82,7 +83,7 @@ Die html-Datei könnte also wie folgt aussehen:
 Und die dazugehörige CSS-Datei:
 
 \begin{lstlisting}[style=CSS]
-    *{
+*{
     box-sizing: border-box;
 }
 
