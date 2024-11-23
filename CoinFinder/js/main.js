@@ -37,6 +37,10 @@ function mainLoop() {
         return;
     }
 
+    let currentFrame = GetFrame();
+    FindCircles(currentFrame);
+    ShowFrame(currentFrame);
+
     //loop the function
     requestAnimationFrame(mainLoop);
 }
