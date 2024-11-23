@@ -1,8 +1,12 @@
-const video = document.getElementById('video');
-const outputCanvas = document.getElementById('canvas');
-const videoContainer = document.getElementById('videoContainer');
+let video;
+let outputCanvas;
+let videoContainer;
 
 window.onload = () => {
+    video = document.getElementById('video');
+    outputCanvas = document.getElementById('canvas');
+    videoContainer = document.getElementById('videoContainer');
+
     // Webcam stream erhalten
     navigator.mediaDevices.getUserMedia({
         video: true,
@@ -33,8 +37,6 @@ function mainLoop() {
         console.error('OpenCV.js not loaded');
         return;
     }
-
-    //console.log("minRadius " + minRadius + " maxRadius " + maxRadius + " dp " + dp + " param1 " + param1 + " param2 " + param2);
 
     //loop the function
     requestAnimationFrame(mainLoop);

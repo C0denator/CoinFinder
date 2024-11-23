@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="de">
-<script src="lib/opencv_4.10.0.js"></script>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +7,11 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.js"></script>
+
+    <script src="js/main.js"></script>
+    <script src="js/slider.js"></script>
+    <script src="js/houghCircles.js"></script>
+    <script src="lib/opencv_4.10.0.js"></script>
 </head>
 <body>
 <div id="mainContainer">
@@ -23,7 +27,7 @@
     <div class="sliderContainer" id="slider2" data-min="10" data-max="100" data-range="true" data-step="1" data-var1="minRadius" data-var2="maxRadius">
         <div class ="slider"></div>
         <div class ="sliderValue" id="sliderValue2">
-            <span>30</span>
+            <span>30</span> -
             <span>70</span>
         </div>
         <div>Radius</div>
@@ -43,8 +47,5 @@
         <canvas id="canvas" width="720" height="540"></canvas>
     </div>
 </div>
-<script src="js/houghCircles.js"></script>
-<script src="js/slider.js"></script>
-<script src="js/main.js"></script>
 </body>
 </html>
