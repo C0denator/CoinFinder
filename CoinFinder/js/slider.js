@@ -4,10 +4,14 @@ const sliderContainers = document.querySelectorAll('.sliderContainer');
 sliderContainers.forEach(container => {
     const sliderElement = container.querySelector('.slider');
     const valueElement = container.querySelector('.sliderValue');
+
     const min = parseFloat(container.dataset.min);
     const max = parseFloat(container.dataset.max);
     const step = parseFloat(container.dataset.step);
+    const var1 = container.dataset.var1;
+    const var2 = container.dataset.var2;
     const isRange = container.dataset.range === "true"; // Überprüft, ob Bereichsmodus aktiv ist
+    console.log("Data for slider: min: " + min + " max: " + max + " step: " + step + " var1: " + var1 + " var2: " + var2 + " isRange: " + isRange);
 
     // Startwerte auslesen
     let startValues = [];
@@ -47,6 +51,15 @@ sliderContainers.forEach(container => {
                 spanValues[handle].textContent = values[handle];
             }
 
+            //TODO: Beide Variablen aktualisieren
+            if(var1 !== undefined && var2 !== undefined){
+                UpdateVariable(var1, values, 0);
+                UpdateVariable(var2, values, 1);
+            }else{
+                console.log("var1 or var2 is undefined. Slider will not change any variables");
+            }
+
+
         } else {
             // Einzelregler: Textinhalt aktualisieren
             if(step >= 1){
@@ -55,6 +68,28 @@ sliderContainers.forEach(container => {
                 valueElement.textContent = values[handle];
             }
 
+            if(var1 !== undefined){
+                // Variable aktualisieren
+                UpdateVariable(var1, values, handle);
+            }else{
+                console.log("var1 is undefined. Slider will not change any variables");
+            }
+
         }
     });
 });
+
+function UpdateVariable(varName, values, handle){
+    //check if variable exists
+    if (eval('typeof ' + varName) === 'undefined') {
+        console.warn('Variable '+varName+' does not exist');
+        return;
+    }
+
+    //update variable
+    if(eval('typeof ' + varName) === 'number'){
+        eval(varName + ' = ' + parseFloat(values[handle]));
+    }else if(eval('typeof ' + varName) === 'string'){
+        eval(varName + ' = ' + values[handle]);
+    }
+}

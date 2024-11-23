@@ -34,12 +34,11 @@ function mainLoop() {
         return;
     }
 
+    //console.log("minRadius " + minRadius + " maxRadius " + maxRadius + " dp " + dp + " param1 " + param1 + " param2 " + param2);
+
     //loop the function
     requestAnimationFrame(mainLoop);
 }
-
-
-function DetectCircles(inputMat){}
 
 let tempCanvas = document.createElement('canvas');
 let tempCtx= tempCanvas.getContext('2d', { willReadFrequently: true });
