@@ -2,34 +2,6 @@ const video = document.getElementById('video');
 const outputCanvas = document.getElementById('canvas');
 const videoContainer = document.getElementById('videoContainer');
 
-// Alle Slider-Container selektieren
-const sliderContainers = document.querySelectorAll('.sliderContainer');
-
-sliderContainers.forEach(container => {
-    // Slider- und Value-Elemente innerhalb des Containers finden
-    const sliderElement = container.querySelector('.slider');
-    const valueElement = container.querySelector('.sliderValue');
-
-    // Standardwert aus dem Value-Element lesen (falls angegeben)
-    const startValue = parseInt(valueElement.textContent, 10) || 50;
-
-    // Slider erstellen
-    noUiSlider.create(sliderElement, {
-        start: [startValue], // Startwert
-        range: {
-            'min': 0,
-            'max': 100
-        },
-        step: 1 // Schrittweite
-    });
-
-    // Update-Event hinzufügen, um den Wert anzuzeigen
-    sliderElement.noUiSlider.on('update', (values, handle) => {
-        valueElement.textContent = values[handle];
-    });
-});
-
-
 window.onload = () => {
     // Webcam stream erhalten
     navigator.mediaDevices.getUserMedia({
@@ -62,27 +34,12 @@ function mainLoop() {
         return;
     }
 
-    //Show red channel
-    showRedChannel();
-
     //loop the function
     requestAnimationFrame(mainLoop);
 }
 
 
-function showRedChannel() {
-    let frameMat = GetFrame();
-
-    let channels = new cv.MatVector();
-
-    cv.split(frameMat, channels);
-
-    ShowFrame(channels.get(0));
-
-    //free memory
-    channels.delete();
-    frameMat.delete();
-}
+function DetectCircles(inputMat){}
 
 let tempCanvas = document.createElement('canvas');
 let tempCtx= tempCanvas.getContext('2d', { willReadFrequently: true });
