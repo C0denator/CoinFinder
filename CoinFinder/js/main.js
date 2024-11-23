@@ -19,7 +19,6 @@ window.onload = () => {
             //print camera stats
             console.log("Camera resolution: " + video.videoWidth + "x" + video.videoHeight);
             console.log("Camera frame rate: " + stream.getVideoTracks()[0].getSettings().frameRate+ " fps");
-            console.log("Camera id: " + stream.getVideoTracks()[0].getSettings().deviceId);
 
             //set the aspect ratio of the video to the div
             //videoContainer.style.aspectRatio = (video.videoWidth).toString() + " / " + (video.videoHeight).toString();

@@ -1,4 +1,6 @@
-window.addEventListener("load", InitSliders);
+window.addEventListener("load", () => {
+    InitSliders();
+});
 
 function InitSliders(){
     // Alle Slider-Container selektieren
@@ -14,7 +16,7 @@ function InitSliders(){
         const var1 = container.dataset.var1;
         const var2 = container.dataset.var2;
         const isRange = container.dataset.range === "true"; // Überprüft, ob Bereichsmodus aktiv ist
-        console.log("Data for slider: min: " + min + " max: " + max + " step: " + step + " var1: " + var1 + " var2: " + var2 + " isRange: " + isRange);
+        //console.log("Data for slider: min: " + min + " max: " + max + " step: " + step + " var1: " + var1 + " var2: " + var2 + " isRange: " + isRange);
 
         // Startwerte auslesen
         let startValues = [];
@@ -42,16 +44,16 @@ function InitSliders(){
             connect: isRange ? true : [true, false] // Verbindet die Regler bei Range-Modus
         });
 
+        SetSliderValueFromCookie(container.id);
+
         // Update-Event
         sliderElement.noUiSlider.on('update', (values, handle) => {
             if (isRange) {
                 // Bereichsmodus: Werte in <span>-Elementen aktualisieren
                 if(step >= 1){
-                    const spanValues = valueElement.querySelectorAll('span');
-                    spanValues[handle].textContent = Math.round(values[handle]);
+                    valueElement.textContent = values.map(value => Math.round(value)).join(' - ');
                 }else{
-                    const spanValues = valueElement.querySelectorAll('span');
-                    spanValues[handle].textContent = values[handle];
+                    valueElement.textContent = values.map(value => value).join(' - ');
                 }
 
                 //TODO: Beide Variablen aktualisieren
@@ -79,8 +81,13 @@ function InitSliders(){
                 }
 
             }
+
+            // Cookie setzen
+            SetSliderCookie(container.id, values);
         });
     });
+
+    console.log("Sliders initialized. \n Variables: dp " + dp + " minRadius " + minRadius + " maxRadius " + maxRadius + " param1 " + param1 + " param2 " + param2);
 }
 
 function UpdateVariable(varName, values, handle){
@@ -96,6 +103,61 @@ function UpdateVariable(varName, values, handle){
     }else if(eval('typeof ' + varName) === 'string'){
         eval(varName + ' = ' + values[handle]);
     }
+}
 
-    console.log("minRadius " + minRadius + " maxRadius " + maxRadius + " dp " + dp + " param1 " + param1 + " param2 " + param2);
+function GetSliderCookie(){
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; sliderValues=`);
+    if (parts.length === 2) {
+        const cookieValue = parts.pop().split(';').shift();
+        return JSON.parse(cookieValue);  // Parsen des JSON-Strings
+    }
+    return {};  // Falls der Cookie nicht existiert, ein leeres Objekt zurückgeben
+}
+
+function SetSliderCookie(sliderId, value) {
+    // Holen des bestehenden Cookie-Werts
+    let sliderValues = GetSliderCookie();
+
+    // Setze den Wert des Sliders im Cookie
+    sliderValues[sliderId] = value;
+
+    // Setze den Cookie mit den neuen Werten
+    const expires = new Date();
+    expires.setDate(expires.getDate() + 7); // Cookie läuft in 7 Tagen ab
+    document.cookie = `sliderValues=${JSON.stringify(sliderValues)}; expires=${expires.toUTCString()}; path=/;`;
+}
+
+function SetSliderValueFromCookie(containerID){
+    const sliderValues = GetSliderCookie();
+
+    const sliderContainer = document.getElementById(containerID);
+
+    if (!sliderContainer) {
+        console.error('Slider container not found');
+        return;
+    }
+
+    const slider = sliderContainer.querySelector('.slider');
+    const sliderValueElement = sliderContainer.querySelector('.sliderValue');
+
+    if (!slider || !sliderValueElement) {
+        console.error('Slider or value element not found');
+        return;
+    }
+
+    const savedValue = sliderValues[containerID];
+
+    if (savedValue !== undefined) {
+        // Den Slider auf den gespeicherten Wert setzen
+        slider.noUiSlider.set(savedValue);
+
+        // Anzeige des aktuellen Werts aktualisieren
+        sliderValueElement.textContent = Array.isArray(savedValue) ? savedValue.join(' - ') : savedValue;
+        //console.log("Slider values set for " + containerID + " from cookie");
+    }else{
+        console.log("No saved value for " + containerID + " found in cookie");
+    }
+
+
 }
