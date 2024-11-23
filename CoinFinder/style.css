@@ -5,6 +5,11 @@
 html, body {
     background-color: #18204d;
     color: #ffffff;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+p {
+    margin: 0 0 0 2em;
 }
 
 #mainContainer{
@@ -13,6 +18,12 @@ html, body {
     height: 97dvh;
     display: flex;
     flex-direction: column;
+}
+
+#textContainer{
+    display: flex;
+    align-items: center;
+    margin: 0 1em 0 1em;
 }
 
 #videoContainer{
@@ -44,4 +55,21 @@ html, body {
 
 #videoContainer{
     border: 0.5em solid blue;
+}
+
+/*Slider stuff*/
+
+.sliderContainer {
+    display: flex;
+    align-items: center;
+    gap: 1em;
+    margin: 1em;
+}
+
+.slider {
+    width: 30em;
+}
+
+.slider-Value {
+    font-weight: bold;
 }

@@ -6,12 +6,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Player mit Canvas Overlay</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.js"></script>
 </head>
 <body>
 <div id="mainContainer">
-    <div class="container" id="textContainer">
+    <div id="textContainer">
         <h1>CoinFinder</h1>
         <p>Aktueller Wert: <span id="value">0</span>€</p>
+    </div>
+    <div class="sliderContainer">
+        <div class ="slider" id="slider1"></div>
+        <div class ="sliderValue" id="sliderValue1">0</div>
+        <div>Param 1</div>
+    </div>
+    <div class="sliderContainer">
+        <div class ="slider" id="slider2"></div>
+        <div class ="sliderValue" id="sliderValue2">0</div>
+        <div>Param 2</div>
     </div>
     <div class="container" id="videoContainer">
         <video id="video" width="720" height="540" autoplay muted loop></video>
