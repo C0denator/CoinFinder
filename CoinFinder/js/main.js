@@ -56,9 +56,7 @@ function GetFrame(){
     tempCtx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
 
     //create a matrix from the temp canvas
-    let frameMat = cv.imread(tempCanvas);
-
-    return frameMat;
+    return cv.imread(tempCanvas);
 }
 
 function ShowFrame(inputMat){

@@ -42,12 +42,7 @@ Als aller erstes brauchen wir natürlich eine aktuelle Version von openCV.js. Di
 
 \href{https://docs.opencv.org/4.10.0/opencv.js}{https://docs.opencv.org/4.10.0/opencv.js}
 
-Speichere die Datei in deinem Projektverzeichnis und binde sie in deiner HTML-Datei wie eine normale JavaScript-Datei ein:
-
-\begin{lstlisting}[style=HTML]
-<script src="opencv.js"></script>
-\end{lstlisting}
-
+Speichere die Datei in deinem Projektverzeichnis und binde sie in deiner HTML-Datei wie eine normale JavaScript-Datei ein.
 
 \subsection{Grundaufbau der Webseite}
 Für unsere Webanwendung benötigen wir zunächst eine simple HTML-Struktur mit mindestens zwei Elementen: einem Video-Element für den Kamerastream und einem Canvas-Element, auf welchem wir die Bildverarbeitungsergebnisse anzeigen können. Beide Elemente sollten idealerweise übereinander liegen und die selbe Größe haben.
@@ -56,16 +51,16 @@ Die html-Datei könnte also wie folgt aussehen:
 \begin{lstlisting}[style=HTML]
 <!DOCTYPE html>
 <html lang="de">
-<script src="lib/opencv_4.10.0.js"></script>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Player mit Canvas Overlay</title>
     <link rel="stylesheet" href="style.css">
+    <script src="lib/opencv_4.10.0.js"></script>
 </head>
 <body>
 <div id="mainContainer">
-    <div class="container" id="textContainer">
+    <div id="textContainer">
         <h1>CoinFinder</h1>
         <p>Aktueller Wert: <span id="value">0</span>€</p>
     </div>
@@ -74,8 +69,6 @@ Die html-Datei könnte also wie folgt aussehen:
         <canvas id="canvas" width="720" height="540"></canvas>
     </div>
 </div>
-
-<script src="script.js"></script>
 </body>
 </html>
 \end{lstlisting}
@@ -90,6 +83,7 @@ Und die dazugehörige CSS-Datei:
 html, body {
     background-color: #18204d;
     color: #ffffff;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 #mainContainer{
@@ -100,13 +94,17 @@ html, body {
     flex-direction: column;
 }
 
+#textContainer{
+    display: flex;
+    align-items: center;
+    margin: 0 1em 0 1em;
+}
+
 #videoContainer{
     position: relative;
     height: 100%;
     width: 100%;
-
     flex-grow: 1;
-
     align-items: center;
     justify-content: center;
     display: flex;
@@ -133,34 +131,74 @@ html, body {
 \end{lstlisting}
 
 \subsection{Grundlegende openCV Methoden}
-Codebeispiel:
+Zunächst benötigen wir eine Methode, um auf die Kamera des Nutzers zuzugreifen und den Videostream auf dem Video-Element anzuzeigen. Dafür können wir die getUserMedia-API verwenden. Zur Sicherheit führen wir Funktionen mit openCV-Funktionalitäten erst nach dem window.onload-Event aus, um sicherzustellen, dass alle Elemente, insbesondere die 10MB große openCV.js Bibliothek, vollständig geladen sind:
 
 \begin{lstlisting}[style=JavaScript]
-if(!result.wasPinDetected || (coreStartPoint === undefined || coreEndPoint === undefined)){
-    if(debug){
-        console.log("Kern nicht gefunden");
-    }
-    amountOfUnknown++;
-} else { //Wenn ein Kern gefunden wurde:
-    //Kern zeichnen und Eckpunkte ermitteln
-    result = DrawCore(guiMat, coreStartPoint, coreEndPoint, 1);
+    window.onload = () => {
+        video = document.getElementById('video');
+    
+        // Webcam stream erhalten
+        navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: false
+        }).then(stream => {
+            video.srcObject = stream;
+            video.onloadedmetadata = () => {
+                video.play();
 
-    //Eckpunkte des Rechteckes speichern
-    let leftPoint = result.leftPoint;
-    let rightPoint = result.rightPoint;
-    let topPoint = result.topPoint;
-    let bottomPoint = result.bottomPoint;
-
-    //den Bildbereich definieren, in dem sich der Zylinderkern befindet
-    let pinScanArea = new cv.Rect(leftPoint.x, topPoint.y, Math.abs(rightPoint.x - leftPoint.x), Math.abs(bottomPoint.y - topPoint.y));
-    //scanArea in der Ausgabe-Matrix einzeichnen
-    if (debug) {
-        cv.rectangle(guiMat, new cv.Point(pinScanArea.x, pinScanArea.y), new cv.Point(pinScanArea.x + pinScanArea.width, pinScanArea.y + pinScanArea.height), new cv.Scalar(255, 255, 255, 255), 5);
-    }
-
-    result = currentCore.CheckPins(inputMat, guiMat, pinScanArea); //Stifte prüfen
+                //start the main loop
+                requestAnimationFrame(mainLoop);
+            };
+        }).catch(error => {
+            console.error('Error accessing the camera: ', error);
+        });
+    };
 }
 \end{lstlisting}
+
+Um mit openCV arbeiten zu können. brauchen wir eine Möglichkeit die Bilddaten aus dem Video-Element zu extrahieren und in eine openCV-Matrix zu konvertieren. Dafür können wir die cv.imread()-Methode verwenden, jedoch braucht diese ein HTML-Canvas-Element als Argument. Wir können also nicht direkt das Video-Element übergeben, sondern müssen zuerst die Bilddaten auf ein Canvas-Element zeichnen. Dafür erstellen wir uns einen neuen Canvas, welcher nur im JavaScript-Code existiert und nicht Teil des DOM ist. Nachdem wir den aktuellen Frame auf das Canvas gezeichnet haben, können wir die Bilddaten mit cv.imread() in eine openCV-Matrix konvertieren:
+
+\begin{lstlisting}[style=JavaScript]
+let tempCanvas = document.createElement('canvas');
+let tempCtx= tempCanvas.getContext('2d', { willReadFrequently: true });
+function GetFrame(){
+    //Größe des temp. Canvas auf die Größe des output Canvas setzen
+    tempCanvas.width = outputCanvas.width;
+    tempCanvas.height = outputCanvas.height;
+
+    //Bilddaten des Videos auf das temp. Canvas zeichnen
+    tempCtx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
+
+    //Bilddaten in openCV-Matrix konvertieren und zurückgeben
+    return cv.imread(tempCanvas);
+}
+\end{lstlisting}
+
+Bevor wir nun mit der Kreiserkennung beginnen, sollten wir uns noch eine Methode schreiben, um die openCV-Matrix auf das Canvas-Element zu zeichnen. Dafür können wir die cv.imshow()-Methode verwenden. Auch diese benötigt wieder ein Canvas-Element als Argument, in unserem Fall nehmen wir unser bereits definierten outputCanvas, welcher über unserem Video-Element liegt. In der Regel benutzen wir eine Matrix nicht weiter, nachdem wir sie auf das Canvas gezeichnet haben, deshalb können wir sie in der Methode direkt wieder freigeben, um Speicherplatz zu sparen und Speicherlecks zu vermeiden:
+
+\begin{lstlisting}[style=JavaScript]
+function ShowFrame(inputMat){
+    cv.imshow('canvas', inputMat); //Matrix auf Canvas zeichnen
+    inputMat.delete(); //free memory
+}
+\end{lstlisting}
+
+Hinweis zur Speicherfreigabe: openCV.js verwaltet den Speicher nicht automatisch, wie es bei JavaScript üblich ist. Das bedeutet, dass wir selbst dafür verantwortlich sind, den Speicher freizugeben, sobald wir ihn nicht mehr benötigen. Dies betrifft hauptsächlich Objekte vom Typ cv.Mat, welche wir mit der delete()-Methode freigeben können. Tun wir dies nicht, verbraucht der Browser mit jedem neuen Aufruf von new cv.Mat() oder cv.imread() mehr Speicher, bis irgendwann der Browsertab abstürzt. Sollte dein Programm nach einigen Sekunden oder Minuten aufhören zu funktionieren, könnte dies ein Hinweis auf ein Speicherleck sein. Schaue in diesem Fall in die Konsole nach einer entsprechenden Fehlermeldung.
+
+Zu guter Letzt benötigen wir noch einen Hauptloop, welcher die Bilddaten aus dem Video-Element extrahiert, die Kreiserkennung durchführt und das Ergebnis auf dem Canvas-Element anzeigt. Dafür können wir die requestAnimationFrame()-Methode verwenden, welche uns eine optimale Bildwiederholrate garantiert. Rufe die Methode am Besten nach dem Laden der Kamera auf, um sicherzustellen, dass alle Elemente vollständig geladen sind:
+
+\begin{lstlisting}[style=JavaScript]
+function mainLoop() {
+    let currentFrame = GetFrame();
+    
+    //Unsere Bildverarbeitungsmethoden kommen hier rein
+
+    ShowFrame(currentFrame);
+    requestAnimationFrame(mainLoop); //Funktion wiederholen
+}
+\end{lstlisting}
+
+Nun sind wir bereit, mit der Kreiserkennung zu beginnen. Im nächsten Abschnitt werden wir uns die Circle Hough Transform genauer ansehen und sie auf unser Beispiel anwenden.
 
 \section{Kreiserkennung}
 \subsection{Circle Hough Transform}
