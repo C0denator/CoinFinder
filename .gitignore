@@ -70,3 +70,5 @@ coverage/
 *.tdo
 *.upa
 *.upb
+*.fls
+*.fdb_latexmk
