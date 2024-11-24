@@ -174,7 +174,7 @@ function GetFrame(){
 }
 \end{lstlisting}
 
-Bevor wir nun mit der Kreiserkennung beginnen, sollten wir uns noch eine Methode schreiben, um die openCV-Matrix auf das Canvas-Element zu zeichnen. Dafür können wir die cv.imshow()-Methode verwenden. Auch diese benötigt wieder ein Canvas-Element als Argument, in unserem Fall nehmen wir unser bereits definierten outputCanvas, welcher über unserem Video-Element liegt. In der Regel benutzen wir eine Matrix nicht weiter, nachdem wir sie auf das Canvas gezeichnet haben, deshalb können wir sie in der Methode direkt wieder freigeben, um Speicherplatz zu sparen und Speicherlecks zu vermeiden:
+Bevor wir nun mit der Kreiserkennung beginnen, sollten wir uns noch eine Methode schreiben, um die Änderungen die wir machen auch in unserer Webanwendung anzuzeigen. Dafür können wir die cv.imshow()-Methode verwenden. Auch diese benötigt wieder ein Canvas-Element als Argument, in unserem Fall nehmen wir unseren bereits definierten outputCanvas, welcher direkt über unserem Video-Element liegt. In der Regel benutzen wir eine Matrix nicht weiter, nachdem wir sie auf das Canvas gezeichnet haben, deshalb können wir sie in der Methode direkt wieder freigeben, um Speicherplatz zu sparen und Speicherlecks zu vermeiden:
 
 \begin{lstlisting}[style=JavaScript]
 function ShowFrame(inputMat){
