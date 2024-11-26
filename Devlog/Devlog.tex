@@ -5,7 +5,7 @@
 \usepackage{eurosym} %Eurozeichen
 \usepackage[colorlinks=true, linkcolor=black, urlcolor=blue]{hyperref} %Links
 \usepackage[ngerman]{babel} % für Deutsche Silbentrennung
-\input{Listings.tex} %Code-Listings für JavaScript (ausgelagert in JS_listings.tex)
+\input{Listings.tex} %Code-Listings für JavaScript (ausgelagert in Listings.tex)
 
 \renewcommand{\familydefault}{\sfdefault} %Schriftart auf serifenlos ändern
 \renewcommand{\baselinestretch}{1.15} %Zeilenabstand
@@ -17,18 +17,32 @@
 
 \begin{document}
 
-\maketitle
+\maketitle \newpage
 
 \renewcommand*\contentsname{Inhaltsverzeichnis} %Überschrift des Inhaltsverzeichnisses ändern
-\tableofcontents
+\tableofcontents \newpage
 
-\section{Einleitung und Motivation}
-(Einleitung und Motivation)
+\section{Einleitung}
 
-In diesem Devlog möchte ich einen Überblick über die geläufigen Methoden der Kreiserkennung und Kreisklassifizierung aufzeigen, von einfachen und leicht verständlichen Verfahren wie der Geometrie- oder Farberkennung, bis hin zu den mächtigen Werkzeugen der Musteranalyse und Objekterkennung. 
+Probleme der Bilderkennung und Bildverarbeitung gewinnen immer mehr an Relevanz. Kein Wunder: Mit der stetigen Verbreitung von mobilen Endgeräten haben immer mehr Systeme Zugriff auf eine (ziemlich hochwertige) Kamera. Die Möglichkeiten, die sich dadurch ergeben, sind vielfältig: über das Scannen von Dokumenten, hin zur Klassifizierung von Tieren und Pflanzen bis hin zum industriellen Einsatz in der Qualitätskontrolle.
 
-Alle Ansätze werde ich dabei stets an einem Beispiel demonstrieren. Damit Du leicht alles auf deinem eigenen Rechner selber ausprobieren kannst, testen wir alle Methoden an Hand von Euromünzen. Warum ausgerechnet Euromünzen? Sie eignen sich perfekt: sie sind alle rund, haben klar festgelegte Farben und Größen und fast jeder sollte welche zur Hand haben. Im Laufe des Devlogs werden wir somit eine Webanwendung entwickeln, welche auf eine angeschlossene Webkamera zugreift, die Bilddaten nach Münzen durchsucht, und jede gefundene Münze ihren 'Wert' zuteilt. Am Ende wird dann anschließend der Gesamtbetrag aller Münzen im Bild angezeigt. 
+Jedoch geht der Trend auch in die Richtung von Onlineservices und Webanwendungen. Programme die früher noch installiert werden mussten, laufen nun direkt im Browser des Clients. Die Gründe sind vielfältig: volle Platformunabhängigkeit, leichtes Einspielen von Updates und keine Installation von zusätzlicher Software. Aber wie sieht es mit Bildverarbeitung und Bilderkennung im Webkontext aus? Die bekannteste Bibliothek für Bildverarbeitung, OpenCV, ist ursprünglich in C++ geschrieben und muss somit auf Serverseite laufen. Aber nicht immer ist die Option sinnvoll oder vorhanden. Nicht immer steht die benötigte Rechenleistung zur Verfügung, auch die Latenz kann letztendlich ein Problem darstellen. Ist es möglich diese Probleme auch im Browser des Clients zu lösen? Die Antwort: Ja! Mit openCV.js.
 
+Ich starte diesen DevBlog um mich genau mit genau dieser Bibliothek auseinanderzusetzen und meine Erfahrungen und Erkenntnisse hier zu teilen. Ich werde genau das gerade erwähnte Problem lösen: Bildverarbeitung direkt im Browser des Clients. Aber was genau möchte ich nun erkennen oder verarbeiten? 
+
+Mein Ziel ist eine Webanwendung, welche Münzen erkennen kann und diese anschließend ihren Wert zuordnet. Warum ausgerechnet Münzen? Zum einen ist es ein recht komplexes Problem, welches gleich viele verschiedene Aspekte der Bildverarbeitung auf Einaml abdeckt, zum anderen ist es eine Problemstellung, welches sich leicht auf einem anderen System reproduzieren lässt. Alles was du brauchst, ist lediglich eine Webkamera und ein paar Münzen. 
+
+Ich habe viele verschieden Ansätze und Ideen, wie ich dieses Problem lösen könnte. Von einfachen Bildoperationen, über die Kreiserkennung bis hin zur Objekterkennung und Musteranalyse. Ob sie alle funktionieren und erfolgreich sind? Keine Ahnung! Jedoch werde ich meine Fortschritte und Erkenntnisse in diesem Blog festhalten und stets meinen Programmcode teilen. Und vielleicht kann ich dir sogar helfen, wenn du vor einem ähnlichen Problem stehen solltest!
+
+Interessiert? Dann lass uns anfangen!
+\section{Motivation}
+Aber warum das ganze? Einst musste ich (wie du vielleicht auch) ein Problem der Bildverarbeitung lösen, welches zwingend im Webkontext stattfinden sollte. Die Anforderungen waren klar: die Bildverarbeitung sollte direkt im Browser des Clients stattfinden, ohne dass der Nutzer eine zusätzliche Software installieren muss. 
+
+Die Bibliothek openCV war natürlich die erste Wahl, jedoch stand ich nun genau vor diesem Problem: wie bekomme ich openCV, eine Bibliothek, die ursprünglich in C++ geschrieben ist, in meiner Webanwendung zum Laufen? Meine Lösung war natürlich openCV.js.
+
+Obwohl es sich zunächst als die beste Lösung angehört hat, war die Nutzung von openCV.js jedoch kein Selbstläufer. Wie du wahrscheinlich bereits mit Schrecken festgestellt hast, ist die offizielle Dokumentation nur für die C++ Schnittstelle geschrieben, und Tutorials für openCV.js sind leider rar gesät. Die JavaScript-SChnittstelle von openCV ist nun mal die neuste Änderung des mittlerweise 20 Jahre alten Projektes und somit noch nicht so ausgereift und erprobt wie die anderen Schnittstellen.
+
+Genau aus diesen Gründen habe ich mich für das Schreiben dieses Devlogs entschieden. Ich möchte meine Erfahrungen und Erkenntnisse teilen, um anderen Entwicklern zu helfen, die vor dem gleichen Problem stehen. Ich möchte zeigen, dass es gar nicht so kompliziert ist, openCV.js in einer Webanwendung zu nutzen und wie mächtig die Bibliothek tatsächlich ist. Ja es gibt ein paar Eigenheiten und Macken, aber genau diese werde ich erläutern, damit du nicht die gleichen Fehler machst wie sie ich einst gemacht habe.
 \section{Wahl der Technologien}
 Wenn Probleme im Bereich der Bildverarbeitung gelöst werden sollen, fällt die Wahl häufig auf OpenCV. Und das nicht ohne Grund: OpenCV bietet ein rießiges Spektrum an Funktionen und Algorithmen, von einfachen Bildoperationen hin zu ausgereiften Algorithmen der Gesichtserkennung, Bildsegmentierung und Objekterkennung. Auch Maschinelles Lernen und Deep Learning sind in OpenCV integriert.
 
