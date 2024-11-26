@@ -1,31 +1,13 @@
 \usepackage{listings}
 \usepackage[dvipsnames]{xcolor}
 
-% Farben für JavaScript-Code definieren
+% Farben definieren
 \definecolor{lightgray}{rgb}{.9,.9,.9}
 \definecolor{darkgray}{rgb}{.4,.4,.4}
 \definecolor{darkGreen}{rgb}{0.0, 0.5, 0.0}
 
-% JavaScript als neue Sprache definieren
-\lstdefinelanguage{JavaScript}{
-  keywords={abstract, any, as, boolean, break, case, catch, class, console, 
-  const, continue, debugger, declare, default, delete, do, else, enum, export, 
-  extends, false, finally, for, from, function, get, if, implements, import, in, 
-  infer, instanceof, interface, keyof, let, module, namespace, never, new, null, 
-  number, object, package, private, protected, public, readonly, require, return, 
-  set, static, string, super, switch, symbol, this, throw, true, try, type, typeof, 
-  undefined, unique, unknown, var, void, while, with, yield},
-  morecomment=[l]{//},
-  morecomment=[s]{/*}{*/},
-  morestring=[b]',
-  morestring=[b]",
-  ndkeywords={class, export, boolean, throw, implements, import, this},
-  sensitive=true
-}
-
-% Einstellungen für JavaScript-Code
+% globale Einstellungen für das Package listings
 \lstset{
-   language=JavaScript,
    backgroundcolor=\color{lightgray},
    extendedchars=true,
    basicstyle=\footnotesize\ttfamily,
@@ -56,6 +38,7 @@
   {»}{{\guillemotright}}1 {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {¿}{{?`}}1 {¡}{{!`}}1 
 }
 
+%style für JavaScript
 \lstdefinestyle{JavaScript}{
   language=JavaScript,
   keywordstyle=\color{blue}\bfseries,
@@ -65,6 +48,7 @@
   stringstyle=\color{Bittersweet}\ttfamily,
 }
 
+%style für HTML
 \lstdefinestyle{HTML}{
   language=HTML,
   keywordstyle=\color{blue}\bfseries,
@@ -74,69 +58,6 @@
   stringstyle=\color{Bittersweet}\ttfamily,
 }
 
-\lstdefinelanguage{CSS}{
-    sensitive=true, % CSS ist case-sensitive
-    morekeywords={
-        align-content, align-items, align-self, all, animation, animation-delay, 
-        animation-direction, animation-duration, animation-fill-mode, 
-        animation-iteration-count, animation-name, animation-play-state, 
-        animation-timing-function, backface-visibility, background, 
-        background-attachment, background-blend-mode, background-clip, 
-        background-color, background-image, background-origin, 
-        background-position, background-repeat, background-size, border, 
-        border-bottom, border-bottom-color, border-bottom-left-radius, 
-        border-bottom-right-radius, border-bottom-style, border-bottom-width, 
-        border-collapse, border-color, border-image, border-image-outset, 
-        border-image-repeat, border-image-slice, border-image-source, 
-        border-image-width, border-left, border-left-color, border-left-style, 
-        border-left-width, border-radius, border-right, border-right-color, 
-        border-right-style, border-right-width, border-spacing, border-style, 
-        border-top, border-top-color, border-top-left-radius, 
-        border-top-right-radius, border-top-style, border-top-width, 
-        border-width, bottom, box-shadow, box-sizing, caption-side, clear, 
-        clip, color, column-count, column-fill, column-gap, column-rule, 
-        column-rule-color, column-rule-style, column-rule-width, column-span, 
-        column-width, columns, content, counter-increment, counter-reset, 
-        cursor, direction, display, empty-cells, filter, flex, flex-basis, 
-        flex-direction, flex-flow, flex-grow, flex-shrink, flex-wrap, float, 
-        font, font-family, font-feature-settings, font-kerning, font-size, 
-        font-size-adjust, font-stretch, font-style, font-variant, 
-        font-variant-caps, font-variant-ligatures, font-variant-numeric, 
-        font-weight, grid, grid-area, grid-auto-columns, grid-auto-flow, 
-        grid-auto-rows, grid-column, grid-column-end, grid-column-gap, 
-        grid-column-start, grid-gap, grid-row, grid-row-end, grid-row-gap, 
-        grid-row-start, grid-template, grid-template-areas, 
-        grid-template-columns, grid-template-rows, hanging-punctuation, 
-        height, hyphens, justify-content, left, letter-spacing, line-break, 
-        line-height, list-style, list-style-image, list-style-position, 
-        list-style-type, margin, margin-bottom, margin-left, margin-right, 
-        margin-top, max-height, max-width, min-height, min-width, 
-        mix-blend-mode, object-fit, object-position, opacity, order, orphans, 
-        outline, outline-color, outline-offset, outline-style, outline-width, 
-        overflow, overflow-wrap, overflow-x, overflow-y, padding, 
-        padding-bottom, padding-left, padding-right, padding-top, 
-        page-break-after, page-break-before, page-break-inside, perspective, 
-        perspective-origin, pointer-events, position, quotes, resize, 
-        right, scroll-behavior, tab-size, table-layout, text-align, 
-        text-align-last, text-combine-upright, text-decoration, 
-        text-decoration-color, text-decoration-line, text-decoration-style, 
-        text-indent, text-justify, text-orientation, text-overflow, 
-        text-shadow, text-transform, top, transform, transform-origin, 
-        transform-style, transition, transition-delay, 
-        transition-duration, transition-property, transition-timing-function, 
-        unicode-bidi, user-select, vertical-align, visibility, 
-        white-space, widows, width, word-break, word-spacing, word-wrap, 
-        writing-mode, z-index
-    },
-    morecomment=[l]{/*}, % Kommentare beginnen mit /* und enden mit */
-    morestring=[b]", % Zeichenketten mit " und '
-    morestring=[b]',
-    keywordstyle=\color{blue}\bfseries, % Schlüsselwörter fett und blau
-    identifierstyle=\color{black}, % IDs und Klassen schwarz
-    commentstyle=\color{green}\itshape, % Kommentare grün und kursiv
-    stringstyle=\color{red}, % Zeichenketten rot
-    sensitive=true % Groß-/Kleinschreibung beachten
-}
 %style für css
 \lstdefinestyle{CSS}{
   language=CSS,
@@ -146,5 +67,88 @@
   commentstyle=\color{darkGreen}\ttfamily,
   stringstyle=\color{Bittersweet}\ttfamily,
 }
+
+% JavaScript als neue Sprache definieren
+\lstdefinelanguage{JavaScript}{
+  keywords={
+    abstract, any, as, boolean, break, case, catch, class, console, 
+    const, continue, debugger, declare, default, delete, do, else, enum, export, 
+    extends, false, finally, for, from, function, get, if, implements, import, in, 
+    infer, instanceof, interface, keyof, let, module, namespace, never, new, null, 
+    number, object, package, private, protected, public, readonly, require, return, 
+    set, static, string, super, switch, symbol, this, throw, true, try, type, typeof, 
+    undefined, unique, unknown, var, void, while, with, yield
+  },
+  morecomment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  morestring=[b]',
+  morestring=[b]",
+  ndkeywords={class, export, boolean, throw, implements, import, this},
+  sensitive=true
+}
+
+% CSS als neue Sprache definieren
+\lstdefinelanguage{CSS}{
+  keywords={
+    align-content, align-items, align-self, all, animation, animation-delay, 
+    animation-direction, animation-duration, animation-fill-mode, 
+    animation-iteration-count, animation-name, animation-play-state, 
+    animation-timing-function, backface-visibility, background, 
+    background-attachment, background-blend-mode, background-clip, 
+    background-color, background-image, background-origin, 
+    background-position, background-repeat, background-size, border, 
+    border-bottom, border-bottom-color, border-bottom-left-radius, 
+    border-bottom-right-radius, border-bottom-style, border-bottom-width, 
+    border-collapse, border-color, border-image, border-image-outset, 
+    border-image-repeat, border-image-slice, border-image-source, 
+    border-image-width, border-left, border-left-color, border-left-style, 
+    border-left-width, border-radius, border-right, border-right-color, 
+    border-right-style, border-right-width, border-spacing, border-style, 
+    border-top, border-top-color, border-top-left-radius, 
+    border-top-right-radius, border-top-style, border-top-width, 
+    border-width, bottom, box-shadow, box-sizing, caption-side, clear, 
+    clip, color, column-count, column-fill, column-gap, column-rule, 
+    column-rule-color, column-rule-style, column-rule-width, column-span, 
+    column-width, columns, content, counter-increment, counter-reset, 
+    cursor, direction, display, empty-cells, filter, flex, flex-basis, 
+    flex-direction, flex-flow, flex-grow, flex-shrink, flex-wrap, float, 
+    font, font-family, font-feature-settings, font-kerning, font-size, 
+    font-size-adjust, font-stretch, font-style, font-variant, 
+    font-variant-caps, font-variant-ligatures, font-variant-numeric, 
+    font-weight, grid, grid-area, grid-auto-columns, grid-auto-flow, 
+    grid-auto-rows, grid-column, grid-column-end, grid-column-gap, 
+    grid-column-start, grid-gap, grid-row, grid-row-end, grid-row-gap, 
+    grid-row-start, grid-template, grid-template-areas, 
+    grid-template-columns, grid-template-rows, hanging-punctuation, 
+    height, hyphens, justify-content, left, letter-spacing, line-break, 
+    line-height, list-style, list-style-image, list-style-position, 
+    list-style-type, margin, margin-bottom, margin-left, margin-right, 
+    margin-top, max-height, max-width, min-height, min-width, 
+    mix-blend-mode, object-fit, object-position, opacity, order, orphans, 
+    outline, outline-color, outline-offset, outline-style, outline-width, 
+    overflow, overflow-wrap, overflow-x, overflow-y, padding, 
+    padding-bottom, padding-left, padding-right, padding-top, 
+    page-break-after, page-break-before, page-break-inside, perspective, 
+    perspective-origin, pointer-events, position, quotes, resize, 
+    right, scroll-behavior, tab-size, table-layout, text-align, 
+    text-align-last, text-combine-upright, text-decoration, 
+    text-decoration-color, text-decoration-line, text-decoration-style, 
+    text-indent, text-justify, text-orientation, text-overflow, 
+    text-shadow, text-transform, top, transform, transform-origin, 
+    transform-style, transition, transition-delay, 
+    transition-duration, transition-property, transition-timing-function, 
+    unicode-bidi, user-select, vertical-align, visibility, 
+    white-space, widows, width, word-break, word-spacing, word-wrap, 
+    writing-mode, z-index
+  },
+  sensitive=true, % CSS ist case-sensitive
+  alsoletter={-}, % Bindestrich ist auch ein Zeichen
+  morecomment=[l]{/*}, % Kommentare beginnen mit /* und enden mit */
+  morestring=[b]", % Zeichenketten mit " und '
+  morestring=[b]',
+  sensitive=true, % Groß-/Kleinschreibung beachten
+}
+
+
 
   
