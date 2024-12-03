@@ -14,22 +14,21 @@ function FindCircles(inputMat){
     cv.HoughCircles(grayMat, circlesMat, cv.HOUGH_GRADIENT, dp, minRadius, param1, param2, minRadius, maxRadius);
 
     //create circle objects
-    let foundCircle = [];
+    let foundCircles = [];
     for (let i = 0; i < circlesMat.cols; ++i) {
         let x = circlesMat.data32F[i * 3];
         let y = circlesMat.data32F[i * 3 + 1];
         let radius = circlesMat.data32F[i * 3 + 2];
 
-        foundCircle.push(new Circle(x, y, radius));
+        foundCircles.push(new Circle(x, y, radius));
     }
 
     //free memory
     grayMat.delete();
 
-    //draw circles
-    DrawCircles(foundCircle, inputMat);
-
     ShowDebugInformation(inputMat);
+
+    return foundCircles;
 }
 
 function DrawCircles(circles, outputMat){
@@ -41,7 +40,10 @@ function DrawCircles(circles, outputMat){
 
     //draw circles
     for(let i = 0; i < circles.length; i++){
-        DrawCircle(circles[i], outputMat, [255, 255, 0, 255]);
+        let c = circles[i];
+        let ratio = c.ftl / c.max_ftl;
+        let color = [255-(255*ratio), 255*ratio, 0, 255];
+        DrawCircle(circles[i], outputMat, color);
     }
 }
 
@@ -67,14 +69,87 @@ function ShowDebugInformation(inputMat){
     cv.putText(inputMat, "Resolution: " + inputMat.cols + "x" + inputMat.rows, new cv.Point(10, inputMat.rows-10), cv.FONT_HERSHEY_SIMPLEX, 0.5, [255, 255, 255, 255]);
 }
 
+/**
+ * Enthält alle Kreise, die in den letzten 5 Frames gefunden wurden
+ * @type {Circle[]}
+ */
+let savedCircles = [];
+
+function UpdateCircles(newCircles){
+    console.log("Length of savedCircles: " + savedCircles.length);
+    console.log("Length of newCircles: " + newCircles.length);
+
+    //return if parameter is not set
+    if(newCircles === undefined){
+        console.error("newCircles is undefined");
+        return;
+    }
+
+    //check ftl for all old circles
+    for(let i = 0; i < savedCircles.length; i++){
+        savedCircles[i].ftl--;
+        if(savedCircles[i].ftl <= 0){
+            savedCircles.splice(i, 1);
+            i--;
+        }
+    }
+
+    /*console.log("SavedCircles: ");
+    console.dir([...savedCircles]);
+    console.log("NewCircles: ");
+    console.dir([...newCircles]);
+    console.log("------------------------------------------------------");*/
+
+    if(newCircles.length === 0){
+        return;
+    }
+
+    if (savedCircles.length === 0) {
+        savedCircles = newCircles.slice();
+    }else{
+        //check if new circles are already in savedCircles
+        for(let i = 0; i < newCircles.length; i++){
+            let found = false;
+            for(let j = 0; j < savedCircles.length; j++){
+                if(AreCirclesEqual(newCircles[i], savedCircles[j])){
+                    found = true;
+                    savedCircles[j].ftl = savedCircles[j].max_ftl;
+
+                    //update position of saved circle, by calculating the average of the old and new position
+                    savedCircles[j].x = (savedCircles[j].x + newCircles[i].x) / 2;
+                    savedCircles[j].y = (savedCircles[j].y + newCircles[i].y) / 2;
+                    savedCircles[j].radius = (savedCircles[j].radius + newCircles[i].radius) / 2;
+
+                    break;
+                }
+            }
+
+            if(!found){
+                savedCircles.push(newCircles[i]);
+            }
+        }
+    }
+
+}
+
+function AreCirclesEqual(circle1, circle2){
+    let margin = 0.5; //how much the circles can touch each other
+    let distance = Math.sqrt(Math.pow(circle1.x - circle2.x, 2) + Math.pow(circle1.y - circle2.y, 2));
+    return distance <= (circle1.radius + circle2.radius) * margin;
+}
+
 class Circle{
     x;
     y;
     radius;
+    ftl; //frame to live
+    max_ftl;
 
     constructor(x, y, radius){
         this.x = x;
         this.y = y;
         this.radius = radius;
+        this.ftl = 20;
+        this.max_ftl = this.ftl;
     }
 }

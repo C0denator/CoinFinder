@@ -38,7 +38,9 @@ function mainLoop() {
     }
 
     let currentFrame = GetFrame();
-    FindCircles(currentFrame);
+    let foundCircles = FindCircles(currentFrame);
+    UpdateCircles(foundCircles);
+    DrawCircles(savedCircles, currentFrame);
     ShowFrame(currentFrame);
 
     //loop the function
@@ -65,9 +67,6 @@ function ShowFrame(inputMat){
         console.error('OpenCV.js not loaded');
         return;
     }
-
-    //print the size of the input matrix
-    console.log("Input size: " + inputMat.cols + "x" + inputMat.rows);
 
     cv.imshow('canvas', inputMat);
 
