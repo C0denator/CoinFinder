@@ -23,13 +23,18 @@ window.onload = () => {
             //set the aspect ratio of the video to the div
             //videoContainer.style.aspectRatio = (video.videoWidth).toString() + " / " + (video.videoHeight).toString();
 
-            //start the main loop
-            requestAnimationFrame(mainLoop);
+            Init();
         };
     }).catch(error => {
         console.error('Error accessing the camera: ', error);
     });
 };
+
+function Init(){
+    InitTemplates();
+
+    requestAnimationFrame(mainLoop);
+}
 
 function mainLoop() {
     if (typeof window.cv === 'undefined') {
