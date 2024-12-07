@@ -19,6 +19,10 @@ function FindCircles(inputMat){
     //Eingabe-Matrix in Graustufen umwandeln
     cv.cvtColor(inputMat, grayMat, cv.COLOR_RGBA2GRAY);
 
+    //reset circlesMat
+    circlesMat.delete();
+    circlesMat = new cv.Mat();
+
     //Hough-Transformation
     cv.HoughCircles(grayMat, circlesMat, cv.HOUGH_GRADIENT, dp, minRadius, param1, param2, minRadius, maxRadius);
 
@@ -51,8 +55,8 @@ function FilterCircles(circles, inputMat){
             }
 
             if (circles[i].IsInsideOf(circles[j])) {
-                //draw red circle
-                DrawCircle(circles[i], inputMat, [255, 0, 0, 255]);
+                //draw pink circle
+                DrawCircle(circles[i], inputMat, [255, 0, 255, 255]);
 
                 circles.splice(i, 1);
                 i--;
@@ -115,14 +119,9 @@ function UpdateCircles(newCircles){
     //console.log("Length of savedCircles: " + savedCircles.length);
     //console.log("Length of newCircles: " + newCircles.length);
 
-    //return if parameter is not set
-    if(newCircles === undefined){
-        console.error("newCircles is undefined");
-        return;
-    }
-
     //check ftl for all old circles
     for(let i = 0; i < savedCircles.length; i++){
+        console.log("ftl: " + savedCircles[i].ftl);
         savedCircles[i].ftl--;
         if(savedCircles[i].ftl <= 0){
             savedCircles.splice(i, 1);
