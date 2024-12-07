@@ -76,8 +76,8 @@ function ShowDebugInformation(inputMat){
 let savedCircles = [];
 
 function UpdateCircles(newCircles){
-    console.log("Length of savedCircles: " + savedCircles.length);
-    console.log("Length of newCircles: " + newCircles.length);
+    //console.log("Length of savedCircles: " + savedCircles.length);
+    //console.log("Length of newCircles: " + newCircles.length);
 
     //return if parameter is not set
     if(newCircles === undefined){

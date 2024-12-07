@@ -87,7 +87,7 @@ function InitSliders(){
         });
     });
 
-    console.log("Sliders initialized. \n Variables: dp " + dp + " minRadius " + minRadius + " maxRadius " + maxRadius + " param1 " + param1 + " param2 " + param2);
+    console.log("Sliders initialized");
 }
 
 function UpdateVariable(varName, values, handle){

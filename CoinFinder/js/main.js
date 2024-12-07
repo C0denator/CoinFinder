@@ -33,6 +33,9 @@ window.onload = () => {
 function Init(){
     InitTemplates();
 
+    console.log("Templates loaded");
+    console.dir(COINS);
+
     requestAnimationFrame(mainLoop);
 }
 
