@@ -32,6 +32,7 @@ function FindCircles(inputMat){
         let x = circlesMat.data32F[i * 3];
         let y = circlesMat.data32F[i * 3 + 1];
         let radius = circlesMat.data32F[i * 3 + 2];
+        let data = inputMat.roi(new cv.Rect(x - radius, y - radius, radius * 2, radius * 2));
 
         foundCircles.push(new Circle(x, y, radius));
     }
@@ -60,6 +61,7 @@ function FilterCircles(circles, inputMat){
 
                 circles.splice(i, 1);
                 i--;
+
                 break;
             }
 
@@ -119,9 +121,11 @@ function UpdateCircles(newCircles){
     //console.log("Length of savedCircles: " + savedCircles.length);
     //console.log("Length of newCircles: " + newCircles.length);
 
+    //make a hard copy of newCircles
+    newCircles = newCircles.slice();
+
     //check ftl for all old circles
     for(let i = 0; i < savedCircles.length; i++){
-        console.log("ftl: " + savedCircles[i].ftl);
         savedCircles[i].ftl--;
         if(savedCircles[i].ftl <= 0){
             savedCircles.splice(i, 1);
@@ -148,12 +152,9 @@ function UpdateCircles(newCircles){
             for(let j = 0; j < savedCircles.length; j++){
                 if(newCircles[i].Equals(savedCircles[j])){
                     found = true;
-                    savedCircles[j].ftl = savedCircles[j].max_ftl;
 
-                    //update position of saved circle, by calculating the average of the old and new position
-                    savedCircles[j].x = (savedCircles[j].x + newCircles[i].x) / 2;
-                    savedCircles[j].y = (savedCircles[j].y + newCircles[i].y) / 2;
-                    savedCircles[j].radius = (savedCircles[j].radius + newCircles[i].radius) / 2;
+                    //update circle
+                    savedCircles[j].Update(newCircles[i]);
 
                     break;
                 }
@@ -174,10 +175,11 @@ class Circle {
     ftl; //frame to live
     max_ftl;
 
-    constructor(x, y, radius) {
+    constructor(x, y, radius, data) {
         this.x = x;
         this.y = y;
         this.radius = radius;
+        this.data = data;
         this.ftl = 20;
         this.max_ftl = this.ftl;
     }
@@ -192,6 +194,24 @@ class Circle {
         let distance = Math.sqrt(Math.pow(this.x - otherCircle.x, 2) + Math.pow(this.y - otherCircle.y, 2));
         let margin = 0.25 //how much of the radius can be outside of the other circle to be still inside
         return otherCircle.radius * (1+margin) >= distance + this.radius;
+    }
+
+    /**
+     * Returns a clipped image of the inputMat, which contains only the circle
+     * @param {Mat} inputMat
+     * @returns {Mat} the clipped Mat
+     * @constructor
+     */
+    GetImageData(inputMat){
+        return inputMat.roi(new cv.Rect(this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2));
+    }
+
+    Update(otherCircle){
+        this.ftl = this.max_ftl;
+
+        this.x = (this.x + otherCircle.x) / 2;
+        this.y = (this.y + otherCircle.y) / 2;
+        this.radius = (this.radius + otherCircle.radius) / 2;
     }
 
 }

@@ -48,12 +48,16 @@ window.addEventListener("load", function () {
 function Init(){
     InitTemplates();
 
-    console.log("Templates loaded");
-    console.dir(COINS);
+    document.addEventListener("templatesLoaded", () => {
+        console.log("Templates loaded");
+        console.dir(COINS);
 
-    requestAnimationFrame(mainLoop);
+        requestAnimationFrame(mainLoop);
+    });
+
 }
 
+let test=false;
 function mainLoop() {
     if (typeof window.cv === 'undefined') {
         console.error('OpenCV.js not loaded');
@@ -66,6 +70,16 @@ function mainLoop() {
     let foundCircles = FindCircles(currentFrame);
     FilterCircles(foundCircles, currentFrame);
     UpdateCircles(foundCircles);
+
+    if (!test && savedCircles.length > 0) {
+        console.log("MatchTemplates Test");
+        MatchTemplates(savedCircles[0].GetImageData(currentFrame));
+        test = true;
+        DrawCircles(savedCircles, currentFrame);
+        ShowFrame(currentFrame);
+        return;
+    }
+
     DrawCircles(savedCircles, currentFrame);
 
     ShowMemoryUsage(currentFrame);

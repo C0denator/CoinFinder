@@ -1,6 +1,37 @@
+const templatesLoaded = new Event('templatesLoaded');
 let path = "../templates/"
 
-function InitTemplates(){
+function InitTemplates() {
+    let coinLength = Object.keys(COINS).length;
+    let loadedCoins = 0;
+    Object.entries(COINS).forEach(([key, value]) => {
+        //is in the template folder a picture with the same name as the key?
+        let img = new Image();
+
+        img.onload = () => {
+
+            //save image as matrix in the coin object
+            COINS[key].template = cv.imread(img);
+
+            console.log("loaded template: " + key);
+
+            loadedCoins++;
+            if(loadedCoins === coinLength){
+                console.log("All templates loaded");
+                document.dispatchEvent(templatesLoaded);
+            }
+        }
+
+        img.onerror = () => {
+            console.log("error: " + key);
+        }
+
+        img.src = path + key + ".png";
+
+    });
+}
+
+function InitHists(){
 
     Object.entries(COINS).forEach(([key, value]) => {
         //is in the template folder a picture with the same name as the key?
@@ -65,6 +96,32 @@ function InitTemplates(){
     });
 }
 
+function MatchTemplates(src){
+    //create result string
+    let resultsString = [];
+    Object.entries(COINS).forEach(([key, value]) => {
+        let resultMat = new cv.Mat();
+
+        //resize src to template size
+        let srcResized = new cv.Mat();
+        cv.resize(src, srcResized, COINS[key].template.size(), 0, 0, cv.INTER_AREA);
+
+        cv.matchTemplate(src, COINS[key].template, resultMat, cv.TM_CCOEFF_NORMED);
+
+        //get highest value
+        let minMax = cv.minMaxLoc(resultMat);
+        let max = minMax.maxVal;
+
+        resultsString.push(new Result(key, max));
+
+        srcResized.delete();
+    });
+
+    console.dir(resultsString);
+
+    src.delete();
+}
+
 function PrintHistogram(hist) {
     let histArray = Array.from(hist.data32F);
     let maxValue = Math.max(...histArray);
@@ -81,3 +138,15 @@ function PrintHistogram(hist) {
     // Gruppe schließen
     console.groupEnd();
 }
+
+class Result {
+    name;
+    value;
+
+    constructor(name, value){
+        this.name = name;
+        this.value = value;
+    }
+
+}
+
