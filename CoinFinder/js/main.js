@@ -2,7 +2,18 @@ let video;
 let outputCanvas;
 let videoContainer;
 
-window.onload = () => {
+/**
+ * the video capture object
+ * @type {cv.VideoCapture}
+ */
+let videoCapture;
+/**
+ * the current frame of the video. The video capture object stores the current frame in this matrix
+ * @type {cv.Mat}
+ */
+let currentFrame;
+
+window.addEventListener("load", function () {
     video = document.getElementById('video');
     outputCanvas = document.getElementById('canvas');
     videoContainer = document.getElementById('videoContainer');
@@ -23,12 +34,16 @@ window.onload = () => {
             //set the aspect ratio of the video to the div
             //videoContainer.style.aspectRatio = (video.videoWidth).toString() + " / " + (video.videoHeight).toString();
 
+            //initialize the currentFrame-Matrix
+            currentFrame = new cv.Mat(video.height, video.width, cv.CV_8UC4);
+            videoCapture = new cv.VideoCapture(video);
+
             Init();
         };
     }).catch(error => {
         console.error('Error accessing the camera: ', error);
     });
-};
+});
 
 function Init(){
     InitTemplates();
@@ -45,7 +60,9 @@ function mainLoop() {
         return;
     }
 
-    let currentFrame = GetFrame();
+    //console.log("loop started-------------------");
+
+    videoCapture.read(currentFrame);
     let foundCircles = FindCircles(currentFrame);
     FilterCircles(foundCircles, currentFrame);
     UpdateCircles(foundCircles);
@@ -56,20 +73,8 @@ function mainLoop() {
 
     //loop the function
     requestAnimationFrame(mainLoop);
-}
 
-let tempCanvas = document.createElement('canvas');
-let tempCtx= tempCanvas.getContext('2d', { willReadFrequently: true });
-function GetFrame(){
-    //set the size of the temp canvas to the size of the output canvas
-    tempCanvas.width = outputCanvas.width;
-    tempCanvas.height = outputCanvas.height;
-
-    //draw the video frame on the temp canvas
-    tempCtx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
-
-    //create a matrix from the temp canvas
-    return cv.imread(tempCanvas);
+    //console.log("loop finieshed-------------------");
 }
 
 function ShowFrame(inputMat){
@@ -80,9 +85,6 @@ function ShowFrame(inputMat){
     }
 
     cv.imshow('canvas', inputMat);
-
-    //free memory
-    inputMat.delete();
 }
 
 /**

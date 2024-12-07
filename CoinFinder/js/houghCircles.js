@@ -3,12 +3,21 @@ let param1 = 50;
 let param2 = 30;
 let minRadius = 0;
 let maxRadius = 0;
-function FindCircles(inputMat){
-    //Eingabe-Matrix in Graustufen umwandeln
-    let grayMat = new cv.Mat();
-    cv.cvtColor(inputMat, grayMat, cv.COLOR_RGBA2GRAY);
+let grayMat;
+let circlesMat;
 
-    let circlesMat = new cv.Mat();
+window.addEventListener("load", function () {
+    cv.onRuntimeInitialized = () => {
+        //create Mats
+        grayMat = new cv.Mat();
+        circlesMat = new cv.Mat();
+    }
+});
+
+function FindCircles(inputMat){
+
+    //Eingabe-Matrix in Graustufen umwandeln
+    cv.cvtColor(inputMat, grayMat, cv.COLOR_RGBA2GRAY);
 
     //Hough-Transformation
     cv.HoughCircles(grayMat, circlesMat, cv.HOUGH_GRADIENT, dp, minRadius, param1, param2, minRadius, maxRadius);
@@ -22,9 +31,6 @@ function FindCircles(inputMat){
 
         foundCircles.push(new Circle(x, y, radius));
     }
-
-    //free memory
-    grayMat.delete();
 
     //draw circles
     for(let i = 0; i < foundCircles.length; i++){

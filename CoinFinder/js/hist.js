@@ -44,10 +44,10 @@ function InitTemplates(){
             COINS[key].hist = [redHist, greenHist, blueHist];
 
             //print each histogram
-            console.log("Histograms for: " + key);
+            /*console.log("Histograms for: " + key);
             PrintHistogram(redHist);
             PrintHistogram(greenHist);
-            PrintHistogram(blueHist);
+            PrintHistogram(blueHist);*/
 
             //free memory
             src.delete();
