@@ -47,8 +47,11 @@ function mainLoop() {
 
     let currentFrame = GetFrame();
     let foundCircles = FindCircles(currentFrame);
+    FilterCircles(foundCircles, currentFrame);
     UpdateCircles(foundCircles);
     DrawCircles(savedCircles, currentFrame);
+
+    ShowMemoryUsage(currentFrame);
     ShowFrame(currentFrame);
 
     //loop the function
@@ -80,6 +83,32 @@ function ShowFrame(inputMat){
 
     //free memory
     inputMat.delete();
+}
+
+/**
+ * Zeigt die Speichernutzung des Browsers unten rechts an
+ */
+function ShowMemoryUsage(inputMat) {
+
+    if (performance.memory) {
+        let memoryInfo = performance.memory;
+
+        let jsHeapSizeLimit = memoryInfo.jsHeapSizeLimit;
+        let totalJSHeapSize = memoryInfo.totalJSHeapSize;
+        let usedJSHeapSize = memoryInfo.usedJSHeapSize;
+
+        //Umrechnung in MB
+        jsHeapSizeLimit = Math.round(jsHeapSizeLimit / 1048576);
+        totalJSHeapSize = Math.round(totalJSHeapSize / 1048576);
+        usedJSHeapSize = Math.round(usedJSHeapSize / 1048576);
+
+        let percentage = Math.round(totalJSHeapSize / jsHeapSizeLimit * 100);
+
+        //Speichernutzung unten rechts anzeigen
+        cv.putText(inputMat, "Memory: " + totalJSHeapSize + "MB / " + jsHeapSizeLimit + "MB (" + percentage + "%)", new cv.Point(inputMat.cols - 260, inputMat.rows - 10), cv.FONT_HERSHEY_SIMPLEX, 0.5, new cv.Scalar(255, 255, 255, 255), 1);
+    } else {
+        console.log("Diese Funktion wird vom Browser nicht unterstützt");
+    }
 }
 
 

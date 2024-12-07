@@ -36,13 +36,18 @@ function InitTemplates(){
             cv.calcHist(matVec, [1], mask, greenHist, histSize, range, false);
             cv.calcHist(matVec, [2], mask, blueHist, histSize, range, false);
 
+            //normalize histograms
+            cv.normalize(redHist, redHist, 0, 255, cv.NORM_MINMAX);
+            cv.normalize(greenHist, greenHist, 0, 255, cv.NORM_MINMAX);
+            cv.normalize(blueHist, blueHist, 0, 255, cv.NORM_MINMAX);
+
             COINS[key].hist = [redHist, greenHist, blueHist];
 
             //print each histogram
             console.log("Histograms for: " + key);
-            //PrintHistogram(redHist);
-            //PrintHistogram(greenHist);
-            //PrintHistogram(blueHist);
+            PrintHistogram(redHist);
+            PrintHistogram(greenHist);
+            PrintHistogram(blueHist);
 
             //free memory
             src.delete();

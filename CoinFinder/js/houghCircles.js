@@ -26,9 +26,35 @@ function FindCircles(inputMat){
     //free memory
     grayMat.delete();
 
+    //draw circles
+    for(let i = 0; i < foundCircles.length; i++){
+        DrawCircle(foundCircles[i], inputMat, [255,255,255,255]);
+    }
+
     ShowDebugInformation(inputMat);
 
     return foundCircles;
+}
+
+function FilterCircles(circles, inputMat){
+    //delete every circle within another circle
+    for(let i = 0; i < circles.length; i++) {
+        for (let j = 0; j < circles.length; j++) {
+            if (i === j) {
+                continue;
+            }
+
+            if (circles[i].IsInsideOf(circles[j])) {
+                //draw red circle
+                DrawCircle(circles[i], inputMat, [255, 0, 0, 255]);
+
+                circles.splice(i, 1);
+                i--;
+                break;
+            }
+
+        }
+    }
 }
 
 function DrawCircles(circles, outputMat){
@@ -75,6 +101,10 @@ function ShowDebugInformation(inputMat){
  */
 let savedCircles = [];
 
+/**
+ * Compares the new-found circles with the saved circles and updates the saved circles
+ * @param {Circle[]} newCircles
+ */
 function UpdateCircles(newCircles){
     //console.log("Length of savedCircles: " + savedCircles.length);
     //console.log("Length of newCircles: " + newCircles.length);
@@ -111,7 +141,7 @@ function UpdateCircles(newCircles){
         for(let i = 0; i < newCircles.length; i++){
             let found = false;
             for(let j = 0; j < savedCircles.length; j++){
-                if(AreCirclesEqual(newCircles[i], savedCircles[j])){
+                if(newCircles[i].Equals(savedCircles[j])){
                     found = true;
                     savedCircles[j].ftl = savedCircles[j].max_ftl;
 
@@ -132,24 +162,31 @@ function UpdateCircles(newCircles){
 
 }
 
-function AreCirclesEqual(circle1, circle2){
-    let margin = 0.5; //how much the circles can touch each other
-    let distance = Math.sqrt(Math.pow(circle1.x - circle2.x, 2) + Math.pow(circle1.y - circle2.y, 2));
-    return distance <= (circle1.radius + circle2.radius) * margin;
-}
-
-class Circle{
+class Circle {
     x;
     y;
     radius;
     ftl; //frame to live
     max_ftl;
 
-    constructor(x, y, radius){
+    constructor(x, y, radius) {
         this.x = x;
         this.y = y;
         this.radius = radius;
         this.ftl = 20;
         this.max_ftl = this.ftl;
     }
+
+    Equals(otherCircle){
+        let margin = 0.5; //how much the circles can touch each other
+        let distance = Math.sqrt(Math.pow(this.x - otherCircle.x, 2) + Math.pow(this.y - otherCircle.y, 2));
+        return distance <= (this.radius + otherCircle.radius) * margin;
+    }
+
+    IsInsideOf(otherCircle){
+        let distance = Math.sqrt(Math.pow(this.x - otherCircle.x, 2) + Math.pow(this.y - otherCircle.y, 2));
+        let margin = 0.25 //how much of the radius can be outside of the other circle to be still inside
+        return otherCircle.radius * (1+margin) >= distance + this.radius;
+    }
+
 }
