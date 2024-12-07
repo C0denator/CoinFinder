@@ -11,7 +11,13 @@ let videoCapture;
  * the current frame of the video. The video capture object stores the current frame in this matrix
  * @type {cv.Mat}
  */
-let currentFrame;
+let inputMat;
+
+/**
+ * the matrix in which the gui elements are drawn
+ * @type {cv.Mat}
+ */
+let guiMat;
 
 window.addEventListener("load", function () {
     video = document.getElementById('video');
@@ -34,8 +40,9 @@ window.addEventListener("load", function () {
             //set the aspect ratio of the video to the div
             //videoContainer.style.aspectRatio = (video.videoWidth).toString() + " / " + (video.videoHeight).toString();
 
-            //initialize the currentFrame-Matrix
-            currentFrame = new cv.Mat(video.height, video.width, cv.CV_8UC4);
+            //initialize the inputMat-Matrix
+            inputMat = new cv.Mat(video.height, video.width, cv.CV_8UC4);
+            guiMat = new cv.Mat(video.height, video.width, cv.CV_8UC4);
             videoCapture = new cv.VideoCapture(video);
 
             Init();
@@ -66,24 +73,25 @@ function mainLoop() {
 
     //console.log("loop started-------------------");
 
-    videoCapture.read(currentFrame);
-    let foundCircles = FindCircles(currentFrame);
-    FilterCircles(foundCircles, currentFrame);
+    videoCapture.read(inputMat);
+    videoCapture.read(guiMat);
+    let foundCircles = FindCircles(inputMat, guiMat);
+    FilterCircles(foundCircles, inputMat, guiMat);
     UpdateCircles(foundCircles);
 
     if (!test && savedCircles.length > 0) {
         console.log("MatchTemplates Test");
-        MatchTemplates(savedCircles[0].GetImageData(currentFrame));
+        MatchTemplates(savedCircles[0].GetImageData(inputMat));
         test = true;
-        DrawCircles(savedCircles, currentFrame);
-        ShowFrame(currentFrame);
+        DrawCircles(savedCircles, guiMat);
+        ShowFrame(guiMat);
         return;
     }
 
-    DrawCircles(savedCircles, currentFrame);
+    DrawCircles(savedCircles, guiMat);
 
-    ShowMemoryUsage(currentFrame);
-    ShowFrame(currentFrame);
+    ShowMemoryUsage(guiMat);
+    ShowFrame(guiMat);
 
     //loop the function
     requestAnimationFrame(mainLoop);

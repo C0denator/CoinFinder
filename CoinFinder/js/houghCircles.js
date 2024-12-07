@@ -14,7 +14,7 @@ window.addEventListener("load", function () {
     }
 });
 
-function FindCircles(inputMat){
+function FindCircles(inputMat, guiMat){
 
     //Eingabe-Matrix in Graustufen umwandeln
     cv.cvtColor(inputMat, grayMat, cv.COLOR_RGBA2GRAY);
@@ -39,15 +39,15 @@ function FindCircles(inputMat){
 
     //draw circles
     for(let i = 0; i < foundCircles.length; i++){
-        DrawCircle(foundCircles[i], inputMat, [255,255,255,255]);
+        DrawCircle(foundCircles[i], guiMat, [255,255,255,255]);
     }
 
-    ShowDebugInformation(inputMat);
+    ShowDebugInformation(guiMat);
 
     return foundCircles;
 }
 
-function FilterCircles(circles, inputMat){
+function FilterCircles(circles, inputMat, guiMat){
     //delete every circle within another circle
     for(let i = 0; i < circles.length; i++) {
         for (let j = 0; j < circles.length; j++) {
@@ -57,7 +57,7 @@ function FilterCircles(circles, inputMat){
 
             if (circles[i].IsInsideOf(circles[j])) {
                 //draw pink circle
-                DrawCircle(circles[i], inputMat, [255, 0, 255, 255]);
+                DrawCircle(circles[i], guiMat, [255, 0, 255, 255]);
 
                 circles.splice(i, 1);
                 i--;
@@ -69,7 +69,7 @@ function FilterCircles(circles, inputMat){
     }
 }
 
-function DrawCircles(circles, outputMat){
+function DrawCircles(circles, guiMat){
     //return if parameter is not set
     if(circles === undefined){
         console.error("Circles is undefined");
@@ -81,11 +81,11 @@ function DrawCircles(circles, outputMat){
         let c = circles[i];
         let ratio = c.ftl / c.max_ftl;
         let color = [255-(255*ratio), 255*ratio, 0, 255];
-        DrawCircle(circles[i], outputMat, color);
+        DrawCircle(circles[i], guiMat, color);
     }
 }
 
-function DrawCircle(circle, outputMat, color){
+function DrawCircle(circle, guiMat, color){
     //return if parameter is not set
     if(circle === undefined){
         console.error("Circle is undefined");
@@ -93,18 +93,18 @@ function DrawCircle(circle, outputMat, color){
     }
 
     //draw circle
-    cv.circle(outputMat, new cv.Point(circle.x, circle.y), circle.radius, color, 2);
+    cv.circle(guiMat, new cv.Point(circle.x, circle.y), circle.radius, color, 2);
 }
 
-function ShowDebugInformation(inputMat){
+function ShowDebugInformation(guiMat){
     //draw min and max radius in the top left corner
-    cv.putText(inputMat, "Min Radius: " + minRadius, new cv.Point(100, 20), cv.FONT_HERSHEY_SIMPLEX, 0.5, [0, 255, 0, 255]);
-    cv.putText(inputMat, "Max Radius: " + maxRadius, new cv.Point(100, 40), cv.FONT_HERSHEY_SIMPLEX, 0.5, [255, 0, 0, 255]);
-    DrawCircle(new Circle(50, 50, minRadius), inputMat, [0, 255, 0, 255]);
-    DrawCircle(new Circle(50, 50, maxRadius), inputMat, [255, 0, 0, 255]);
+    cv.putText(guiMat, "Min Radius: " + minRadius, new cv.Point(100, 20), cv.FONT_HERSHEY_SIMPLEX, 0.5, [0, 255, 0, 255]);
+    cv.putText(guiMat, "Max Radius: " + maxRadius, new cv.Point(100, 40), cv.FONT_HERSHEY_SIMPLEX, 0.5, [255, 0, 0, 255]);
+    DrawCircle(new Circle(50, 50, minRadius), guiMat, [0, 255, 0, 255]);
+    DrawCircle(new Circle(50, 50, maxRadius), guiMat, [255, 0, 0, 255]);
 
-    //draw resolution of inputMat
-    cv.putText(inputMat, "Resolution: " + inputMat.cols + "x" + inputMat.rows, new cv.Point(10, inputMat.rows-10), cv.FONT_HERSHEY_SIMPLEX, 0.5, [255, 255, 255, 255]);
+    //draw resolution of guiMat
+    cv.putText(guiMat, "Resolution: " + guiMat.cols + "x" + guiMat.rows, new cv.Point(10, guiMat.rows-10), cv.FONT_HERSHEY_SIMPLEX, 0.5, [255, 255, 255, 255]);
 }
 
 /**
