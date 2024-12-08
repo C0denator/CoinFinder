@@ -79,18 +79,16 @@ function mainLoop() {
     FilterCircles(foundCircles, inputMat, guiMat);
     UpdateCircles(foundCircles);
 
-    if (!test && savedCircles.length > 0) {
-        console.log("MatchTemplates Test");
-        MatchTemplates(savedCircles[0].GetImageData(inputMat));
-        test = true;
-        DrawCircles(savedCircles, guiMat);
-        ShowFrame(guiMat);
-        return;
+    if(savedCircles.length > 0){
+        savedCircles.forEach(c => {
+           MatchTemplates(c.GetImageData(inputMat), c);
+        });
     }
 
     DrawCircles(savedCircles, guiMat);
 
     ShowMemoryUsage(guiMat);
+    ShowTotalValue(savedCircles);
     ShowFrame(guiMat);
 
     //loop the function
@@ -107,6 +105,24 @@ function ShowFrame(inputMat){
     }
 
     cv.imshow('canvas', inputMat);
+}
+
+
+function ShowTotalValue(circles){
+    let totalValueLabel = document.getElementById("value");
+    if(totalValueLabel === null){
+        console.error("Label not found");
+        return;
+    }
+
+    let totalValue = 0;
+    circles.forEach(c => {
+        if(c.bestMatch !== undefined){
+            totalValue += c.bestMatch.value;
+        }
+    });
+
+    totalValueLabel.innerText = totalValue + "€";
 }
 
 /**

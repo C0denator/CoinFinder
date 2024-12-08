@@ -96,7 +96,7 @@ function InitHists(){
     });
 }
 
-function MatchTemplates(src){
+function MatchTemplates(src, circle){
     //create result string
     let resultsString = [];
     Object.entries(COINS).forEach(([key, value]) => {
@@ -112,14 +112,18 @@ function MatchTemplates(src){
         let minMax = cv.minMaxLoc(resultMat);
         let max = minMax.maxVal;
 
-        console.dir(resultMat);
-
         resultsString.push(new Result(key, max));
 
         srcResized.delete();
     });
 
-    console.dir(resultsString);
+    //sort results from highest to lowest
+    resultsString.sort((a, b) => b.value - a.value);
+
+    //console.dir(resultsString);
+
+    //save bestmatch in circle
+    circle.bestMatch = COINS[resultsString[0].name];
 
     src.delete();
 }
