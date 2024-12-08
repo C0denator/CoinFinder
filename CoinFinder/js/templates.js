@@ -1,5 +1,5 @@
 const templatesLoaded = new Event('templatesLoaded');
-let path = "../templates/"
+let path = "../oldTemplates/"
 
 function InitTemplates() {
     let coinLength = Object.keys(COINS).length;
@@ -17,7 +17,7 @@ function InitTemplates() {
 
             loadedCoins++;
             if(loadedCoins === coinLength){
-                console.log("All templates loaded");
+                console.log("All oldTemplates loaded");
                 document.dispatchEvent(templatesLoaded);
             }
         }
@@ -102,11 +102,11 @@ function MatchTemplates(src, circle){
     Object.entries(COINS).forEach(([key, value]) => {
         let resultMat = new cv.Mat();
 
-        //resize src to template size
-        let srcResized = new cv.Mat();
-        cv.resize(src, srcResized, COINS[key].template.size(), 0, 0, cv.INTER_AREA);
+        //resize template to the size of src
+        let templateResized = new cv.Mat();
+        cv.resize(COINS[key].template, templateResized, COINS[key].template.size(), 0, 0, cv.INTER_AREA);
 
-        cv.matchTemplate(src, COINS[key].template, resultMat, cv.TM_CCOEFF_NORMED);
+        cv.matchTemplate(src, templateResized, resultMat, cv.TM_SQDIFF_NORMED);
 
         //get highest value
         let minMax = cv.minMaxLoc(resultMat);
@@ -114,16 +114,20 @@ function MatchTemplates(src, circle){
 
         resultsString.push(new Result(key, max));
 
-        srcResized.delete();
+        templateResized.delete();
     });
 
     //sort results from highest to lowest
-    resultsString.sort((a, b) => b.value - a.value);
+    resultsString.sort((a, b) => a.value - b.value);
 
     //console.dir(resultsString);
 
     //save bestmatch in circle
     circle.bestMatch = COINS[resultsString[0].name];
+    circle.matchValue = resultsString[0].value;
+
+    //set matchValue to 2 decimal places
+    circle.matchValue = Math.round(circle.matchValue * 100) / 100;
 
     src.delete();
 }

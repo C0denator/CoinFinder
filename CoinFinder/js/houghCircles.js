@@ -88,7 +88,8 @@ function DrawCircles(circles, guiMat){
             cv.putText(guiMat, "?", new cv.Point(circles[i].x, circles[i].y), cv.FONT_HERSHEY_SIMPLEX, 0.5, new cv.Scalar(255, 0, 255, 255), 1);
         }else{
             //print bestMatch
-            cv.putText(guiMat, circles[i].bestMatch.value.toString(), new cv.Point(circles[i].x, circles[i].y), cv.FONT_HERSHEY_SIMPLEX, 0.5, new cv.Scalar(255, 255, 255, 255), 1);
+            cv.putText(guiMat, circles[i].bestMatch.value.toString(), new cv.Point(circles[i].x-10, circles[i].y-6), cv.FONT_HERSHEY_SIMPLEX, 0.5, new cv.Scalar(255, 255, 255, 255), 1);
+            cv.putText(guiMat, circles[i].matchValue.toString(), new cv.Point(circles[i].x-10, circles[i].y+6), cv.FONT_HERSHEY_SIMPLEX, 0.5, new cv.Scalar(255, 255, 255, 255), 1);
         }
     }
 }
