@@ -75,7 +75,12 @@ function mainLoop() {
 
     videoCapture.read(inputMat);
     videoCapture.read(guiMat);
-    let foundCircles = FindCircles(inputMat, guiMat);
+
+    let edgesMat = DetectEdges(inputMat);
+    ShowFrame(edgesMat);
+    edgesMat.delete();
+
+    /*let foundCircles = FindCircles(inputMat, guiMat);
     FilterCircles(foundCircles, inputMat, guiMat);
     UpdateCircles(foundCircles);
 
@@ -89,7 +94,7 @@ function mainLoop() {
 
     ShowMemoryUsage(guiMat);
     ShowTotalValue(savedCircles);
-    ShowFrame(guiMat);
+    ShowFrame(guiMat);*/
 
     //loop the function
     requestAnimationFrame(mainLoop);
