@@ -19,6 +19,9 @@ let inputMat;
  */
 let guiMat;
 
+let loadingFinished = false;
+let loopActive = false;
+
 window.addEventListener("load", function () {
     video = document.getElementById('video');
     outputCanvas = document.getElementById('canvas');
@@ -50,6 +53,23 @@ window.addEventListener("load", function () {
     }).catch(error => {
         console.error('Error accessing the camera: ', error);
     });
+
+    //add event to startButton
+    document.getElementById("readFrame").addEventListener("click", () => {
+        if(loadingFinished){
+            if(!waitingForAnimationFrame) mainLoop();
+        }else{
+            console.error("Can't start the loop because the templates are not loaded yet");
+        }
+    });
+    document.getElementById("toogleLoop").addEventListener("click", () => {
+        loopActive = !loopActive;
+        if(loadingFinished){
+            if(!waitingForAnimationFrame) mainLoop();
+        }else{
+            console.error("Can't start the loop because the templates are not loaded yet");
+        }
+    });
 });
 
 function Init(){
@@ -59,19 +79,17 @@ function Init(){
         console.log("Templates loaded");
         console.dir(COINS);
 
-        requestAnimationFrame(mainLoop);
+        loadingFinished = true;
     });
 
 }
 
 let test=false;
+let waitingForAnimationFrame = false;
 function mainLoop() {
-    if (typeof window.cv === 'undefined') {
-        console.error('OpenCV.js not loaded');
-        return;
-    }
+    waitingForAnimationFrame = false;
 
-    //console.log("loop started-------------------");
+    console.log("loop started-------------------");
 
     videoCapture.read(inputMat);
     videoCapture.read(guiMat);
@@ -96,10 +114,12 @@ function mainLoop() {
     ShowTotalValue(savedCircles);
     ShowFrame(guiMat);*/
 
-    //loop the function
-    requestAnimationFrame(mainLoop);
+    if(loopActive){
+        waitingForAnimationFrame = true;
+        requestAnimationFrame(mainLoop);
+    }
 
-    //console.log("loop finieshed-------------------");
+    console.log("loop finieshed-------------------");
 }
 
 function ShowFrame(inputMat){

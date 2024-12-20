@@ -23,7 +23,19 @@ h3{
 #textContainer{
     display: flex;
     align-items: center;
+}
+
+#textContainer > *{
     margin: 0 1em 0 1em;
+}
+
+button{
+    background-color: #ffa300;
+    color: #18204d;
+    border: none;
+    padding: 0.5em 1em;
+    font-size: 1em;
+    cursor: pointer;
 }
 
 #videoContainer{
@@ -65,7 +77,7 @@ h3{
 }
 
 .slider {
-    width: 30em;
+    width: 50em;
 }
 
 .sliderValue {
