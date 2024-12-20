@@ -13,6 +13,9 @@ function InitTemplates() {
             //save image as matrix in the coin object
             COINS[key].template = cv.imread(img);
 
+            //save edge image as matrix in the coin object
+            COINS[key].edges = DetectEdges(COINS[key].template);
+
             console.log("loaded template: " + key);
 
             loadedCoins++;
