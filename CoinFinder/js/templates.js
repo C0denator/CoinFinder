@@ -1,5 +1,5 @@
 const templatesLoaded = new Event('templatesLoaded');
-let path = "../oldTemplates/"
+let path = "../newTemplates/"
 
 function InitTemplates() {
     let coinLength = Object.keys(COINS).length;
@@ -15,6 +15,8 @@ function InitTemplates() {
 
             //save edge image as matrix in the coin object
             COINS[key].edges = DetectEdges(COINS[key].template);
+
+            //DownloadMatrixAsImage(COINS[key].edges, key + "_edges.png");
 
             console.log("loaded template: " + key);
 

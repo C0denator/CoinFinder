@@ -24,7 +24,7 @@ let loopActive = false;
 
 window.addEventListener("load", function () {
     video = document.getElementById('video');
-    outputCanvas = document.getElementById('canvas');
+    outputCanvas = document.getElementById('outputCanvas');
     videoContainer = document.getElementById('videoContainer');
 
     // Webcam stream erhalten
@@ -70,6 +70,8 @@ window.addEventListener("load", function () {
             console.error("Can't start the loop because the templates are not loaded yet");
         }
     });
+
+    requestAnimationFrame(Init);
 });
 
 function Init(){
@@ -91,12 +93,20 @@ function mainLoop() {
 
     console.log("loop started-------------------");
 
-    videoCapture.read(inputMat);
-    videoCapture.read(guiMat);
+    //videoCapture.read(inputMat);
+    //videoCapture.read(guiMat);
 
-    let edgesMat = DetectEdges(inputMat);
-    ShowFrame(edgesMat);
+    let edgesMat = DetectEdges(COINS.Euro1.template);
+
+    let newSize = new cv.Size(120, 120);
+    let resizeMat = new cv.Mat();
+    let Interpolation = cv.INTER_AREA;
+    cv.resize(edgesMat, resizeMat, newSize, 0, 0, Interpolation);
+
+    ShowFrame(resizeMat);
+
     edgesMat.delete();
+    resizeMat.delete();
 
     /*let foundCircles = FindCircles(inputMat, guiMat);
     FilterCircles(foundCircles, inputMat, guiMat);
@@ -129,7 +139,7 @@ function ShowFrame(inputMat){
         return;
     }
 
-    cv.imshow('canvas', inputMat);
+    cv.imshow(outputCanvas, inputMat);
 }
 
 

@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.js"></script>
 
+    <script src="lib/opencv_4.10.0.js"></script>
+    <script src="lib/jszip_3.7.1.js"></script>
 
     <script src="js/main.js"></script>
     <script src="js/slider.js"></script>
@@ -15,9 +17,6 @@
     <script src="js/coinData.js"></script>
     <script src="js/templates.js"></script>
     <script src="js/canny.js"></script>
-
-    <script src="lib/opencv_4.10.0.js"></script>
-    <script src="lib/jszip_3.7.1.js"></script>
 </head>
 <body>
 <div id="mainContainer">
@@ -69,7 +68,7 @@
     </div>
     <div class="container" id="videoContainer">
         <video id="video" width="720" height="540" autoplay muted loop></video>
-        <canvas id="canvas" width="720" height="540"></canvas>
+        <canvas id="outputCanvas" width="720" height="540"></canvas>
     </div>
 </div>
 </body>
