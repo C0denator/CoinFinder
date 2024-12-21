@@ -69,6 +69,15 @@ window.addEventListener("load", function () {
         }else{
             console.error("Can't start the loop because the templates are not loaded yet");
         }
+
+        //change color depending on the state
+        let button = document.getElementById("toogleLoop");
+        if(loopActive){
+            button.style.backgroundColor = "green";
+        }
+        else{
+            button.style.backgroundColor = "#ffa300";
+        }
     });
 
     requestAnimationFrame(Init);
@@ -88,6 +97,7 @@ function Init(){
 
 let test=false;
 let waitingForAnimationFrame = false;
+let angle = 0;
 function mainLoop() {
     waitingForAnimationFrame = false;
 
@@ -96,13 +106,17 @@ function mainLoop() {
     //videoCapture.read(inputMat);
     //videoCapture.read(guiMat);
 
-    let templates = Object.values(COINS).map(coin => coin.template).filter(template => template instanceof cv.Mat);
+    /*let templates = Object.values(COINS).map(coin => coin.template).filter(template => template instanceof cv.Mat);
     let edgesTemplate = templates.map(template => DetectEdges(template));
-
     ShowMatrices(edgesTemplate);
+    edgesTemplate.forEach(mat => mat.delete());*/
 
-    //delete edgesTemplates
-    edgesTemplate.forEach(mat => mat.delete());
+    let template = COINS.Euro2.edges;
+    angle += 1;
+    RotateMat(template, guiMat, angle);
+
+    ShowMemoryUsage(guiMat);
+    ShowFrame(guiMat);
 
     if(loopActive){
         waitingForAnimationFrame = true;
@@ -155,7 +169,7 @@ function ShowMatrices(matrices){
 
         // Matrix auf passende Größe skalieren
         let resizedMat = new cv.Mat();
-        cv.resize(mat, resizedMat, targetSize, 0, 0, cv.INTER_LINEAR);
+        cv.resize(mat, resizedMat, targetSize, 0, 0, cv.INTER_AREA);
 
         //Matrix in RGBA umwandeln
         let rgbaMat = new cv.Mat();
@@ -179,6 +193,23 @@ function ShowMatrices(matrices){
     });
 }
 
+function RotateMat(src, dist, angle){
+
+    let center = new cv.Point(src.cols / 2, src.rows / 2);
+    let interpolation = cv.INTER_LINEAR;
+    let borderMode = cv.BORDER_CONSTANT;
+    let borderValue = new cv.Scalar();
+
+    //Rotationsmatrix erstellen
+    let rotationMatrix = cv.getRotationMatrix2D(center, angle, 1);
+
+    //Matrix rotieren
+    cv.warpAffine(src, dist, rotationMatrix, new cv.Size(src.cols, src.rows), interpolation, borderMode, borderValue);
+
+    //Matrix freigeben
+    rotationMatrix.delete();
+}
+
 
 function ShowTotalValue(circles){
     let totalValueLabel = document.getElementById("value");
@@ -200,7 +231,7 @@ function ShowTotalValue(circles){
 /**
  * Zeigt die Speichernutzung des Browsers unten rechts an
  */
-function ShowMemoryUsage(inputMat) {
+function ShowMemoryUsage(dst) {
 
     if (performance.memory) {
         let memoryInfo = performance.memory;
@@ -217,7 +248,7 @@ function ShowMemoryUsage(inputMat) {
         let percentage = Math.round(totalJSHeapSize / jsHeapSizeLimit * 100);
 
         //Speichernutzung unten rechts anzeigen
-        cv.putText(inputMat, "Memory: " + totalJSHeapSize + "MB / " + jsHeapSizeLimit + "MB (" + percentage + "%)", new cv.Point(inputMat.cols - 260, inputMat.rows - 10), cv.FONT_HERSHEY_SIMPLEX, 0.5, new cv.Scalar(255, 255, 255, 255), 1);
+        cv.putText(dst, "Memory: " + totalJSHeapSize + "MB / " + jsHeapSizeLimit + "MB (" + percentage + "%)", new cv.Point(dst.cols - 260, dst.rows - 10), cv.FONT_HERSHEY_SIMPLEX, 0.5, new cv.Scalar(255, 255, 255, 255), 1);
     } else {
         console.log("Diese Funktion wird vom Browser nicht unterstützt");
     }
