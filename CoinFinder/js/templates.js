@@ -32,7 +32,7 @@ function InitTemplates() {
 
             //DownloadMatrixAsImage(COINS[key].edges, key + "_edges.png");
 
-            console.log("loaded template: " + key);
+            console.log("loaded template: " + key +" with img-path: " + img.src);
 
             loadedCoins++;
             if(loadedCoins === coinLength){
@@ -149,81 +149,6 @@ function MatchTemplates(src, circle){
     circle.matchValue = Math.round(circle.matchValue * 100) / 100;
 
     src.delete();
-}
-
-function PrintHistogram(hist) {
-    let histArray = Array.from(hist.data32F);
-    let maxValue = Math.max(...histArray);
-    let maxIndex = histArray.indexOf(maxValue);
-
-    // Titel der Gruppe
-    console.groupCollapsed(`Histogram (Max index at: ${maxIndex}, Max value: ${maxValue})`);
-
-    // Jedes Histogramm-Datum ausgeben
-    histArray.forEach((value, index) => {
-        console.log(`Bin ${index}: ${value.toString().replace(".", ",")}`);
-    });
-
-    // Gruppe schließen
-    console.groupEnd();
-}
-
-function DownloadMatrixAsImage(mat, name) {
-    // Erstellen eines neuen Canvas-Elements
-    let canvas = document.createElement('canvas');
-    canvas.width = mat.cols;
-    canvas.height = mat.rows;
-    let ctx = canvas.getContext('2d');
-
-    // Erstellen eines ImageData-Objekts
-    let imageData = ctx.createImageData(mat.cols, mat.rows);
-
-    // Prüfen, ob das Bild Graustufen oder Farbe ist
-    let channels = mat.channels(); // Anzahl der Kanäle in der Matrix (1 für Graustufen, 3 für Farbe)
-
-    for (let y = 0; y < mat.rows; y++) {
-        for (let x = 0; x < mat.cols; x++) {
-            let pixelIndex = (y * mat.cols + x) * 4; // Index im ImageData-Array
-            if (channels === 1) {
-                // Graustufenbild
-                let pixelValue = mat.ucharAt(y, x);
-                imageData.data[pixelIndex] = pixelValue;     // R
-                imageData.data[pixelIndex + 1] = pixelValue; // G
-                imageData.data[pixelIndex + 2] = pixelValue; // B
-                imageData.data[pixelIndex + 3] = 255;        // A (vollständig undurchsichtig)
-            } else if (channels === 4) {
-                // Farbbild
-                let pixelPtr = mat.ucharPtr(y, x);
-                let pixelValueR = pixelPtr[0];  // R
-                let pixelValueB = pixelPtr[2];  // B
-                let pixelValueG = pixelPtr[1];  // G
-                imageData.data[pixelIndex] = pixelValueR;      // R
-                imageData.data[pixelIndex + 1] = pixelValueG;  // G
-                imageData.data[pixelIndex + 2] = pixelValueB;  // B
-                imageData.data[pixelIndex + 3] = 255;          // A (vollständig undurchsichtig)
-            } else {
-                console.error("Ungültige Anzahl an Kanälen: " + channels);
-            }
-        }
-    }
-
-    // ImageData auf das Canvas anwenden
-    ctx.putImageData(imageData, 0, 0);
-
-    // Canvas zu einem Bild umwandeln
-    let image = new Image();
-    image.src = canvas.toDataURL();
-
-    // Bild herunterladen
-    let a = document.createElement('a');
-    a.href = image.src;
-    a.download = name;
-
-    //Fragen ob heruntergeladen werden soll
-    let confirmDownload = confirm("Möchten Sie das Bild herunterladen?");
-    if (confirmDownload) {
-        a.click();
-    }
 }
 
 class Result {

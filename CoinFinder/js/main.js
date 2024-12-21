@@ -50,8 +50,6 @@ window.addEventListener("load", function () {
             inputMat = new cv.Mat(video.height, video.width, cv.CV_8UC4);
             guiMat = new cv.Mat(video.height, video.width, cv.CV_8UC4);
             videoCapture = new cv.VideoCapture(video);
-
-            Init();
         };
     }).catch(error => {
         console.error('Error accessing the camera: ', error);
@@ -109,16 +107,16 @@ function mainLoop() {
     //videoCapture.read(inputMat);
     //videoCapture.read(guiMat);
 
-    /*let templates = Object.values(COINS).map(coin => coin.template).filter(template => template instanceof cv.Mat);
+    /*let templates = Object.values(COINS).map(coin => coin.template);
     let edgesTemplates = templates.map(template => DetectEdges(template));
-    ShowMatrices(edgesTemplates);
+    ShowMatrices(templates, outputCanvas);
     edgesTemplates.forEach(mat => mat.delete());*/
 
-    let template = COINS.Cent5.template;
+    let template = COINS.Euro2.template;
     angle += 1;
     RotateMat(template, guiMat, angle);
     ShowMemoryUsage(guiMat);
-    ShowFrame(guiMat);
+    ShowMatrix(guiMat, outputCanvas);
 
     if(loopActive){
         waitingForAnimationFrame = true;
@@ -126,95 +124,6 @@ function mainLoop() {
     }
 
     console.log("loop finieshed-------------------");
-}
-
-function ShowFrame(inputMat){
-    //return if openCV is not loaded
-    if (typeof cv === 'undefined') {
-        console.error('OpenCV.js not loaded');
-        return;
-    }
-
-    cv.imshow(outputCanvas, inputMat);
-}
-
-function ShowMatrices(matrices){
-    if(matrices.length === 0){
-        console.error("No matrices to show");
-        return;
-    }
-
-    let numberOfMatrices = matrices.length;
-
-    //Berechnung der Gittergröße
-    let gridCols = Math.ceil(Math.sqrt(numberOfMatrices));
-    let gridRows = Math.ceil(numberOfMatrices / gridCols);
-
-    //Maximalbreite und -höhe der Matrizen basierend auf der Größe des Canvas
-    let cellWidth = outputCanvas.width / gridCols;
-    let cellHeight = outputCanvas.height / gridRows;
-
-    //Canvas leeren
-    let ctx = outputCanvas.getContext('2d');
-    ctx.clearRect(0, 0, outputCanvas.width, outputCanvas.height);
-
-    //jede Matrix im Gitter zeichnen
-    matrices.forEach((mat, index) => {
-        // Spalte und Zeile bestimmen
-        let col = index % gridCols;
-        let row = Math.floor(index / gridCols);
-
-        // Zielbereich für diese Matrix
-        let x = col * cellWidth;
-        let y = row * cellHeight;
-        let targetSize = new cv.Size(cellWidth, cellHeight);
-
-        // Matrix auf passende Größe skalieren
-        let resizedMat = new cv.Mat();
-        cv.resize(mat, resizedMat, targetSize, 0, 0, cv.INTER_AREA);
-
-        console.log("Matrix hat " + resizedMat.channels() + " Kanäle");
-
-        //Matrix in RGBA umwandeln wenn es sich um eine Graustufenmatrix handelt
-        if(resizedMat.channels() === 1){
-            let rgbaMat = new cv.Mat();
-            cv.cvtColor(resizedMat, rgbaMat, cv.COLOR_GRAY2RGBA);
-            resizedMat.delete();
-            resizedMat = rgbaMat;
-        }
-
-        // In ein ImageData konvertieren
-        let imageData = new ImageData(new Uint8ClampedArray(resizedMat.data), resizedMat.cols, resizedMat.rows);
-
-        // Auf Canvas zeichnen
-        let tempCanvas = document.createElement('canvas');
-        tempCanvas.width = resizedMat.cols;
-        tempCanvas.height = resizedMat.rows;
-        let tempCtx = tempCanvas.getContext('2d');
-        tempCtx.putImageData(imageData, 0, 0);
-
-        ctx.drawImage(tempCanvas, 0, 0, resizedMat.cols, resizedMat.rows, x, y, cellWidth, cellHeight);
-
-        // Bereinige die temporäre Matrix
-        resizedMat.delete();
-    });
-}
-
-function RotateMat(src, dist, angle){
-
-    let center = new cv.Point(src.cols / 2, src.rows / 2);
-    let interpolation = cv.INTER_LINEAR;
-    let borderMode = cv.BORDER_CONSTANT;
-    let borderValue = new cv.Scalar();
-
-    //Rotationsmatrix erstellen
-    let rotationMatrix = cv.getRotationMatrix2D(center, angle, 1);
-
-    //Matrix rotieren
-    cv.warpAffine(src, dist, rotationMatrix, new cv.Size(src.cols, src.rows), interpolation, borderMode, borderValue);
-
-    //Matrix freigeben
-    rotationMatrix.delete();
 }
 
 
@@ -233,32 +142,6 @@ function ShowTotalValue(circles){
     });
 
     totalValueLabel.innerText = totalValue + "€";
-}
-
-/**
- * Zeigt die Speichernutzung des Browsers unten rechts an
- */
-function ShowMemoryUsage(dst) {
-
-    if (performance.memory) {
-        let memoryInfo = performance.memory;
-
-        let jsHeapSizeLimit = memoryInfo.jsHeapSizeLimit;
-        let totalJSHeapSize = memoryInfo.totalJSHeapSize;
-        let usedJSHeapSize = memoryInfo.usedJSHeapSize;
-
-        //Umrechnung in MB
-        jsHeapSizeLimit = Math.round(jsHeapSizeLimit / 1048576);
-        totalJSHeapSize = Math.round(totalJSHeapSize / 1048576);
-        usedJSHeapSize = Math.round(usedJSHeapSize / 1048576);
-
-        let percentage = Math.round(totalJSHeapSize / jsHeapSizeLimit * 100);
-
-        //Speichernutzung unten rechts anzeigen
-        cv.putText(dst, "Memory: " + totalJSHeapSize + "MB / " + jsHeapSizeLimit + "MB (" + percentage + "%)", new cv.Point(dst.cols - 260, dst.rows - 10), cv.FONT_HERSHEY_SIMPLEX, 0.5, new cv.Scalar(255, 255, 255, 255), 1);
-    } else {
-        console.log("Diese Funktion wird vom Browser nicht unterstützt");
-    }
 }
 
 
