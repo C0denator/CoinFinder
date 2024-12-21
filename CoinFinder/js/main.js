@@ -22,7 +22,10 @@ let guiMat;
 let loadingFinished = false;
 let loopActive = false;
 
+
+
 window.addEventListener("load", function () {
+    console.log("Page loaded");
     video = document.getElementById('video');
     outputCanvas = document.getElementById('outputCanvas');
     videoContainer = document.getElementById('videoContainer');
@@ -107,14 +110,13 @@ function mainLoop() {
     //videoCapture.read(guiMat);
 
     /*let templates = Object.values(COINS).map(coin => coin.template).filter(template => template instanceof cv.Mat);
-    let edgesTemplate = templates.map(template => DetectEdges(template));
-    ShowMatrices(edgesTemplate);
-    edgesTemplate.forEach(mat => mat.delete());*/
+    let edgesTemplates = templates.map(template => DetectEdges(template));
+    ShowMatrices(edgesTemplates);
+    edgesTemplates.forEach(mat => mat.delete());*/
 
-    let template = COINS.Euro2.edges;
+    let template = COINS.Cent5.template;
     angle += 1;
     RotateMat(template, guiMat, angle);
-
     ShowMemoryUsage(guiMat);
     ShowFrame(guiMat);
 
@@ -171,25 +173,30 @@ function ShowMatrices(matrices){
         let resizedMat = new cv.Mat();
         cv.resize(mat, resizedMat, targetSize, 0, 0, cv.INTER_AREA);
 
-        //Matrix in RGBA umwandeln
-        let rgbaMat = new cv.Mat();
-        cv.cvtColor(resizedMat, rgbaMat, cv.COLOR_GRAY2RGBA);
+        console.log("Matrix hat " + resizedMat.channels() + " Kanäle");
+
+        //Matrix in RGBA umwandeln wenn es sich um eine Graustufenmatrix handelt
+        if(resizedMat.channels() === 1){
+            let rgbaMat = new cv.Mat();
+            cv.cvtColor(resizedMat, rgbaMat, cv.COLOR_GRAY2RGBA);
+            resizedMat.delete();
+            resizedMat = rgbaMat;
+        }
 
         // In ein ImageData konvertieren
-        let imageData = new ImageData(new Uint8ClampedArray(rgbaMat.data), rgbaMat.cols, rgbaMat.rows);
+        let imageData = new ImageData(new Uint8ClampedArray(resizedMat.data), resizedMat.cols, resizedMat.rows);
 
         // Auf Canvas zeichnen
         let tempCanvas = document.createElement('canvas');
-        tempCanvas.width = rgbaMat.cols;
-        tempCanvas.height = rgbaMat.rows;
+        tempCanvas.width = resizedMat.cols;
+        tempCanvas.height = resizedMat.rows;
         let tempCtx = tempCanvas.getContext('2d');
         tempCtx.putImageData(imageData, 0, 0);
 
-        ctx.drawImage(tempCanvas, 0, 0, rgbaMat.cols, rgbaMat.rows, x, y, cellWidth, cellHeight);
+        ctx.drawImage(tempCanvas, 0, 0, resizedMat.cols, resizedMat.rows, x, y, cellWidth, cellHeight);
 
         // Bereinige die temporäre Matrix
         resizedMat.delete();
-        rgbaMat.delete();
     });
 }
 
