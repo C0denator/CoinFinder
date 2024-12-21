@@ -96,33 +96,13 @@ function mainLoop() {
     //videoCapture.read(inputMat);
     //videoCapture.read(guiMat);
 
-    let edgesMat = DetectEdges(COINS.Euro1.template);
+    let templates = Object.values(COINS).map(coin => coin.template).filter(template => template instanceof cv.Mat);
+    let edgesTemplate = templates.map(template => DetectEdges(template));
 
-    let newSize = new cv.Size(120, 120);
-    let resizeMat = new cv.Mat();
-    let Interpolation = cv.INTER_AREA;
-    cv.resize(edgesMat, resizeMat, newSize, 0, 0, Interpolation);
+    ShowMatrices(edgesTemplate);
 
-    ShowFrame(resizeMat);
-
-    edgesMat.delete();
-    resizeMat.delete();
-
-    /*let foundCircles = FindCircles(inputMat, guiMat);
-    FilterCircles(foundCircles, inputMat, guiMat);
-    UpdateCircles(foundCircles);
-
-    if(savedCircles.length > 0){
-        savedCircles.forEach(c => {
-           MatchTemplates(c.GetImageData(inputMat), c);
-        });
-    }
-
-    DrawCircles(savedCircles, guiMat);
-
-    ShowMemoryUsage(guiMat);
-    ShowTotalValue(savedCircles);
-    ShowFrame(guiMat);*/
+    //delete edgesTemplates
+    edgesTemplate.forEach(mat => mat.delete());
 
     if(loopActive){
         waitingForAnimationFrame = true;
@@ -140,6 +120,63 @@ function ShowFrame(inputMat){
     }
 
     cv.imshow(outputCanvas, inputMat);
+}
+
+function ShowMatrices(matrices){
+    if(matrices.length === 0){
+        console.error("No matrices to show");
+        return;
+    }
+
+    let numberOfMatrices = matrices.length;
+
+    //Berechnung der Gittergröße
+    let gridCols = Math.ceil(Math.sqrt(numberOfMatrices));
+    let gridRows = Math.ceil(numberOfMatrices / gridCols);
+
+    //Maximalbreite und -höhe der Matrizen basierend auf der Größe des Canvas
+    let cellWidth = outputCanvas.width / gridCols;
+    let cellHeight = outputCanvas.height / gridRows;
+
+    //Canvas leeren
+    let ctx = outputCanvas.getContext('2d');
+    ctx.clearRect(0, 0, outputCanvas.width, outputCanvas.height);
+
+    //jede Matrix im Gitter zeichnen
+    matrices.forEach((mat, index) => {
+        // Spalte und Zeile bestimmen
+        let col = index % gridCols;
+        let row = Math.floor(index / gridCols);
+
+        // Zielbereich für diese Matrix
+        let x = col * cellWidth;
+        let y = row * cellHeight;
+        let targetSize = new cv.Size(cellWidth, cellHeight);
+
+        // Matrix auf passende Größe skalieren
+        let resizedMat = new cv.Mat();
+        cv.resize(mat, resizedMat, targetSize, 0, 0, cv.INTER_LINEAR);
+
+        //Matrix in RGBA umwandeln
+        let rgbaMat = new cv.Mat();
+        cv.cvtColor(resizedMat, rgbaMat, cv.COLOR_GRAY2RGBA);
+
+        // In ein ImageData konvertieren
+        let imageData = new ImageData(new Uint8ClampedArray(rgbaMat.data), rgbaMat.cols, rgbaMat.rows);
+
+        // Auf Canvas zeichnen
+        let tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rgbaMat.cols;
+        tempCanvas.height = rgbaMat.rows;
+        let tempCtx = tempCanvas.getContext('2d');
+        tempCtx.putImageData(imageData, 0, 0);
+
+        ctx.drawImage(tempCanvas, 0, 0, rgbaMat.cols, rgbaMat.rows, x, y, cellWidth, cellHeight);
+
+        // Bereinige die temporäre Matrix
+        resizedMat.delete();
+        rgbaMat.delete();
+    });
 }
 
 
