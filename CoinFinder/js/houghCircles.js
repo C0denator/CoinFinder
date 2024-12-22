@@ -216,13 +216,14 @@ class Circle {
     }
 
     /**
-     * Returns a clipped image of the inputMat, which contains only the circle
-     * @param {Mat} inputMat
-     * @returns {Mat} the clipped Mat
-     * @constructor
+     * Returns a clipped matrix with only the pixels inside the circle
+     * @param {Mat} src - The Matrix from which the image should be clipped
+     * @returns {Mat} - Matrix with only the pixels inside the circle
      */
-    GetImageData(inputMat){
-        return inputMat.roi(new cv.Rect(this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2));
+    GetImageData(src){
+        let clippedImage = src.roi(new cv.Rect(this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2));
+
+        return ClipCorners(clippedImage);
     }
 
     Update(otherCircle){

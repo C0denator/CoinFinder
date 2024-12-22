@@ -16,20 +16,11 @@ function InitTemplates() {
 
             //draw edges around the coin black
             let src = cv.imread(img);
-            let radius = src.cols/2;
-            let center = new cv.Point(src.cols/2, src.rows/2);
 
-            let mask = cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC1);
-            cv.circle(mask, center, radius, [255, 255, 255, 255], -1);
-
-            let maskedImage = new cv.Mat();
-            cv.bitwise_and(src, src, maskedImage, mask);
-
-            //delete mats
-            src.delete();
+            console.log("Loaded image has type: " + GetMatrixType(src));
 
             //save image as matrix in the coin object
-            COINS[key].template = maskedImage;
+            COINS[key].template = ClipCorners(src);
 
             //save edge image as matrix in the coin object
             COINS[key].edges = DetectEdges(COINS[key].template);

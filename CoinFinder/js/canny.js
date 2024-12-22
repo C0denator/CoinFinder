@@ -10,12 +10,25 @@ let L2gradient = true;
  * @returns {Mat} The Matrix with the detected edges
  */
 function DetectEdges(src){
+    if(!CheckForCorrectMatType(src, [MatTypes.CV_8UC4, MatTypes.CV_8UC1])) return null;
+
     //create output mat
     let edgesMat = new cv.Mat();
 
     //create gray mat
     let grayMat = new cv.Mat();
-    cv.cvtColor(src, grayMat, cv.COLOR_RGBA2GRAY, 0);
+
+    if(src.type() === MatTypes.CV_8UC4){
+        cv.cvtColor(src, grayMat, cv.COLOR_RGBA2GRAY, 0);
+    }else if(src.type() === MatTypes.CV_8UC1) {
+        //clone the matrix
+        console.warn("src is already a gray matrix. Cloning it");
+        grayMat = src.clone();
+    }else{
+        console.error("Unsupported type of src-matrix: " + GetMatrixType(src));
+        return null;
+    }
+
 
     //clamp apertureSize to 3, 5 or 7
     let allowedValues = [3, 5, 7];

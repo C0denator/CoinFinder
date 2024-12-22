@@ -4,7 +4,7 @@ let videoContainer;
 
 /**
  * the video capture object
- * @type {cv.VideoCapture}
+ * @type {VideoCapture}
  */
 let videoCapture;
 /**
@@ -121,6 +121,7 @@ function mainLoop() {
 
     let foundCircles = FindCircles(inputMat, guiMat);
     FilterCircles(foundCircles, guiMat);
+    //foundCircles.forEach(c => MatchTemplates())
 
     ShowMemoryUsage(guiMat);
     ShowMatrix(guiMat, outputCanvas);
