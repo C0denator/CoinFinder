@@ -4,13 +4,18 @@ let apertureSize = 3;
 let blurSize = 3;
 let L2gradient = true;
 
-function DetectEdges(inputMat){
+/**
+ * Detects edges in a given Mat and returns a new Mat with the detected edges
+ * @param {Mat} src - The Matrix in which the edges should be detected
+ * @returns {Mat} The Matrix with the detected edges
+ */
+function DetectEdges(src){
     //create output mat
     let edgesMat = new cv.Mat();
 
     //create gray mat
     let grayMat = new cv.Mat();
-    cv.cvtColor(inputMat, grayMat, cv.COLOR_RGBA2GRAY, 0);
+    cv.cvtColor(src, grayMat, cv.COLOR_RGBA2GRAY, 0);
 
     //clamp apertureSize to 3, 5 or 7
     let allowedValues = [3, 5, 7];

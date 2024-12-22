@@ -1,6 +1,6 @@
 /**
  * Zeigt eine Matrix auf einem Canvas an
- * @param {cv.Mat} src
+ * @param {Mat} src
  * @param {HTMLCanvasElement} canvas
  */
 function ShowMatrix(src, canvas){
@@ -9,7 +9,7 @@ function ShowMatrix(src, canvas){
 
 /**
  * Zeigt mehrere Matrizen in einem Gitter auf einem Canvas an
- * @param {cv.Mat[]} src
+ * @param {Mat[]} src
  * @param {HTMLCanvasElement} canvas
  */
 function ShowMatrices(src, canvas) {
@@ -85,8 +85,8 @@ function ShowMatrices(src, canvas) {
 
 /**
  * Rotiert eine Matrix um einen bestimmten Winkel
- * @param {cv.Mat} src Die zu rotierende Matrix
- * @param {cv.Mat} dist Die Matrix, in die das Ergebnis geschrieben wird
+ * @param {Mat} src Die zu rotierende Matrix
+ * @param {Mat} dist Die Matrix, in die das Ergebnis geschrieben wird
  * @param {number} angle Der Winkel in Grad
  */
 function RotateMat(src, dist, angle){
@@ -108,7 +108,7 @@ function RotateMat(src, dist, angle){
 
 /**
  * Lässt den Benutzer die übergebene Matrix als Bild herunterladen
- * @param {cv.Mat} src Die Matrix, die heruntergeladen werden soll
+ * @param {Mat} src Die Matrix, die heruntergeladen werden soll
  * @param {string} name Der Name der Datei
  */
 function DownloadMatrixAsImage(src, name) {
@@ -197,7 +197,7 @@ function ShowMemoryUsage(dst) {
 
 /**
  * Gibt die Werte eines Histogramms in der Konsole aus
- * @param {cv.Mat} hist Das Histogramm welches ausgegeben werden soll
+ * @param {Mat} hist Das Histogramm welches ausgegeben werden soll
  */
 function PrintHistogram(hist) {
     let histArray = Array.from(hist.data32F);

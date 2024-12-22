@@ -22,8 +22,6 @@ let guiMat;
 let loadingFinished = false;
 let loopActive = false;
 
-
-
 window.addEventListener("load", function () {
     console.log("Page loaded");
     video = document.getElementById('video');
@@ -80,6 +78,12 @@ window.addEventListener("load", function () {
             button.style.backgroundColor = "#ffa300";
         }
     });
+    document.getElementById("showTemplates").addEventListener("click", () => {
+        let templates = Object.values(COINS).map(coin => coin.template);
+        let edgesTemplates = templates.map(template => DetectEdges(template));
+        ShowMatrices(edgesTemplates, outputCanvas);
+        edgesTemplates.forEach(mat => mat.delete());
+    });
 
     requestAnimationFrame(Init);
 });
@@ -102,15 +106,10 @@ let angle = 0;
 function mainLoop() {
     waitingForAnimationFrame = false;
 
-    console.log("loop started-------------------");
+    console.log("--- loop started");
 
     //videoCapture.read(inputMat);
     //videoCapture.read(guiMat);
-
-    /*let templates = Object.values(COINS).map(coin => coin.template);
-    let edgesTemplates = templates.map(template => DetectEdges(template));
-    ShowMatrices(templates, outputCanvas);
-    edgesTemplates.forEach(mat => mat.delete());*/
 
     let template = COINS.Euro2.template;
     angle += 1;
@@ -123,7 +122,7 @@ function mainLoop() {
         requestAnimationFrame(mainLoop);
     }
 
-    console.log("loop finieshed-------------------");
+    console.log("--- loop ended");
 }
 
 
