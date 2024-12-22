@@ -1,8 +1,8 @@
-let dp = 1.1;
-let param1 = 50;
-let param2 = 30;
-let minRadius = 0;
-let maxRadius = 0;
+let dp = 2;
+let param1 = 230;
+let param2 = 129;
+let minRadius = 18;
+let maxRadius = 67;
 let grayMat;
 let circlesMat;
 
@@ -14,6 +14,12 @@ window.addEventListener("load", function () {
     }
 });
 
+/**
+ * Find all circles in the inputMat and draw them in the guiMat. Returns an array of Circle-objects
+ * @param {Mat} inputMat - The Matrix in which the circles should be found
+ * @param {Mat} guiMat - The Matrix in which the circles should be drawn
+ * @returns {Circle[]} - Array of Circle-objects
+ */
 function FindCircles(inputMat, guiMat){
 
     //Eingabe-Matrix in Graustufen umwandeln
@@ -46,7 +52,12 @@ function FindCircles(inputMat, guiMat){
     return foundCircles;
 }
 
-function FilterCircles(circles, inputMat, guiMat){
+/**
+ * Filters the circles by deleting every circle that is inside of another circle
+ * @param {Circle[]} circles - The array of circles that should be filtered
+ * @param {Mat} guiMat - The Matrix where deleted circles will be drawn in pink
+ */
+function FilterCircles(circles, guiMat){
     //delete every circle within another circle
     for(let i = 0; i < circles.length; i++) {
         for (let j = 0; j < circles.length; j++) {

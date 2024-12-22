@@ -1,7 +1,7 @@
-let threshold1 = 50;
-let threshold2 = 100;
-let apertureSize = 3;
-let blurSize = 3;
+let threshold1 = 9400;
+let threshold2 = 23300;
+let apertureSize = 7;
+let blurSize = 7;
 let L2gradient = true;
 
 /**

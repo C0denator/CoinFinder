@@ -1,4 +1,8 @@
-const templatesLoaded = new Event('templatesLoaded');
+window.addEventListener("load", () => {
+    InitTemplates();
+});
+
+const OnTemplatesLoaded = new Event('OnTemplatesLoaded');
 let path = "../newTemplates/"
 
 function InitTemplates() {
@@ -36,8 +40,9 @@ function InitTemplates() {
 
             loadedCoins++;
             if(loadedCoins === coinLength){
-                console.log("All oldTemplates loaded");
-                document.dispatchEvent(templatesLoaded);
+                console.log("All templates loaded");
+                console.dir(COINS);
+                document.dispatchEvent(OnTemplatesLoaded);
             }
         }
 

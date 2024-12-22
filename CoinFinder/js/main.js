@@ -18,8 +18,6 @@ let inputMat;
  * @type {cv.Mat}
  */
 let guiMat;
-
-let loadingFinished = false;
 let loopActive = false;
 
 window.addEventListener("load", function () {
@@ -48,6 +46,11 @@ window.addEventListener("load", function () {
             inputMat = new cv.Mat(video.height, video.width, cv.CV_8UC4);
             guiMat = new cv.Mat(video.height, video.width, cv.CV_8UC4);
             videoCapture = new cv.VideoCapture(video);
+
+            //check if everything is loaded
+            cameraLoaded = true;
+            console.log("Camera loaded");
+            CheckIfLoadingFinished();
         };
     }).catch(error => {
         console.error('Error accessing the camera: ', error);
@@ -84,36 +87,41 @@ window.addEventListener("load", function () {
         ShowMatrices(edgesTemplates, outputCanvas);
         edgesTemplates.forEach(mat => mat.delete());
     });
-
-    requestAnimationFrame(Init);
 });
 
-function Init(){
-    InitTemplates();
+document.addEventListener("OnTemplatesLoaded", () => {
+    templatesLoaded = true;
+    CheckIfLoadingFinished();
+});
 
-    document.addEventListener("templatesLoaded", () => {
-        console.log("Templates loaded");
-        console.dir(COINS);
-
-        loadingFinished = true;
-    });
-
+let cameraLoaded = false;
+let templatesLoaded = false;
+let loadingFinished = false;
+function CheckIfLoadingFinished(){
+    loadingFinished = cameraLoaded && templatesLoaded;
+    if(loadingFinished){
+        console.log("Everything is loaded");
+    }
 }
 
-let test=false;
 let waitingForAnimationFrame = false;
 let angle = 0;
 function mainLoop() {
+    if(!loadingFinished){
+        console.warn("Can't start the loop because something is not loaded yet");
+        return;
+    }
+
     waitingForAnimationFrame = false;
 
     console.log("--- loop started");
 
-    //videoCapture.read(inputMat);
-    //videoCapture.read(guiMat);
+    videoCapture.read(inputMat);
+    videoCapture.read(guiMat);
 
-    let template = COINS.Euro2.template;
-    angle += 1;
-    RotateMat(template, guiMat, angle);
+    let foundCircles = FindCircles(inputMat, guiMat);
+    FilterCircles(foundCircles, guiMat);
+
     ShowMemoryUsage(guiMat);
     ShowMatrix(guiMat, outputCanvas);
 
