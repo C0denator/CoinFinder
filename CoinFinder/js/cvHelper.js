@@ -210,7 +210,7 @@ function DownloadMatrixAsImage(src, name) {
  * Zeigt die Speichernutzung des Browsers unten rechts an
  * @param {Mat} dst Die Matrix, auf der die Speichernutzung angezeigt werden soll
  */
-function ShowMemoryUsage(dst) {
+function DrawMemoryUsage(dst) {
 
     if (performance.memory) {
         let memoryInfo = performance.memory;

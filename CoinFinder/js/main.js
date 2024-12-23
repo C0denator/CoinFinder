@@ -9,13 +9,13 @@ let videoContainer;
 let videoCapture;
 /**
  * the current frame of the video. The video capture object stores the current frame in this matrix
- * @type {cv.Mat}
+ * @type {Mat}
  */
 let inputMat;
 
 /**
  * the matrix in which the gui elements are drawn
- * @type {cv.Mat}
+ * @type {Mat}
  */
 let guiMat;
 let loopActive = false;
@@ -114,24 +114,17 @@ function mainLoop() {
 
     console.log("--- loop started");
 
-    // videoCapture.read(inputMat);
+    videoCapture.read(inputMat);
     videoCapture.read(guiMat);
-    //
-    // let foundCircles = FindCircles(inputMat, guiMat);
-    // FilterCircles(foundCircles, guiMat);
-    // //foundCircles.forEach(c => MatchTemplates())
-    //
-    // ShowMemoryUsage(guiMat);
-    // ShowMatrix(guiMat, outputCanvas);
 
-    let templates = Object.values(COINS).map(coin => coin.template);
-    let clippedTemplates = templates.map(template => ClipCorners(template));
-    let edgesTemplates = clippedTemplates.map(template => DetectEdges(template));
-
-    ShowMatrices(edgesTemplates, outputCanvas);
-
-    clippedTemplates.forEach(mat => mat.delete());
-    edgesTemplates.forEach(mat => mat.delete());
+    let foundCircles = FindCircles(inputMat, guiMat);
+    FilterCircles(foundCircles, guiMat);
+    console.log("Found circles: " + foundCircles.length);
+    foundCircles.forEach(c => MatchTemplates(c.GetImageData(inputMat), c));
+    DrawCoinValue(foundCircles, guiMat);
+    ShowTotalValue(foundCircles);
+    DrawMemoryUsage(guiMat);
+    ShowMatrix(guiMat, outputCanvas);
 
     if(loopActive){
         waitingForAnimationFrame = true;
@@ -157,6 +150,24 @@ function ShowTotalValue(circles){
     });
 
     totalValueLabel.innerText = totalValue + "€";
+}
+
+function DrawCoinValue(circles, dist){
+    if (circles === undefined || circles.length === 0) {
+        return;
+    }
+    
+    for(let i = 0; i < circles.length; i++){
+        //does circle have "bestMatch" property?
+        if (circles[i].bestMatch === undefined) {
+            //print "?"
+            cv.putText(dist, "?", new cv.Point(circles[i].x, circles[i].y), cv.FONT_HERSHEY_SIMPLEX, 0.5, new cv.Scalar(255, 0, 255, 255), 1);
+        }else{
+            //print bestMatch
+            cv.putText(dist, circles[i].bestMatch.value.toString(), new cv.Point(circles[i].x-10, circles[i].y-6), cv.FONT_HERSHEY_SIMPLEX, 0.5, new cv.Scalar(255, 255, 255, 255), 1);
+            cv.putText(dist, circles[i].matchValue.toString(), new cv.Point(circles[i].x-10, circles[i].y+6), cv.FONT_HERSHEY_SIMPLEX, 0.5, new cv.Scalar(255, 255, 255, 255), 1);
+        }
+    }
 }
 
 

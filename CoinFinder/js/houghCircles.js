@@ -72,6 +72,8 @@ function FilterCircles(circles, guiMat){
                 circles.splice(i, 1);
                 i--;
 
+                console.log("Deleted circle");
+
                 break;
             }
 
@@ -92,16 +94,6 @@ function DrawCircles(circles, guiMat){
         let ratio = c.ftl / c.max_ftl;
         let color = [255-(255*ratio), 255*ratio, 0, 255];
         DrawCircle(circles[i], guiMat, color);
-
-        //does circle have "bestMatch" property?
-        if (circles[i].bestMatch === undefined) {
-            //print "?"
-            cv.putText(guiMat, "?", new cv.Point(circles[i].x, circles[i].y), cv.FONT_HERSHEY_SIMPLEX, 0.5, new cv.Scalar(255, 0, 255, 255), 1);
-        }else{
-            //print bestMatch
-            cv.putText(guiMat, circles[i].bestMatch.value.toString(), new cv.Point(circles[i].x-10, circles[i].y-6), cv.FONT_HERSHEY_SIMPLEX, 0.5, new cv.Scalar(255, 255, 255, 255), 1);
-            cv.putText(guiMat, circles[i].matchValue.toString(), new cv.Point(circles[i].x-10, circles[i].y+6), cv.FONT_HERSHEY_SIMPLEX, 0.5, new cv.Scalar(255, 255, 255, 255), 1);
-        }
     }
 }
 

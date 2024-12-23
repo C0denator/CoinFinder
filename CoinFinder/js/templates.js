@@ -118,6 +118,11 @@ function InitHists(){
     });
 }
 
+/**
+ * Compares the src with the templates and saves the best match in the circle object
+ * @param {Mat} src
+ * @param {Circle} circle
+ */
 function MatchTemplates(src, circle){
     //create result string
     let resultsString = [];
@@ -142,7 +147,7 @@ function MatchTemplates(src, circle){
     //sort results from highest to lowest
     resultsString.sort((a, b) => a.value - b.value);
 
-    //console.dir(resultsString);
+    console.dir(resultsString);
 
     //save bestmatch in circle
     circle.bestMatch = COINS[resultsString[0].name];
