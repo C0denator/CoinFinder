@@ -17,20 +17,16 @@ function InitTemplates() {
             //draw edges around the coin black
             let src = cv.imread(img);
 
-            console.log("Loaded image has type: " + GetMatrixType(src));
-
             //save image as matrix in the coin object
             COINS[key].template = ClipCorners(src);
 
             //save edge image as matrix in the coin object
             if(key==="Cent1" || key==="Cent2" || key==="Cent5"){
                 blurSize = 5;
-                console.log("blurSize set to " + blurSize + " with key: " + key);
             }else{
                 blurSize = 7;
-                console.log("blurSize set to " + blurSize + " with key: " + key);
             }
-            COINS[key].edges = DetectEdges(COINS[key].template);
+            COINS[key].edges = ConvertC1ToC4(DetectEdges(COINS[key].template));
 
             //DownloadMatrixAsImage(COINS[key].edges, key + "_edges.png");
 
@@ -126,14 +122,32 @@ function InitHists(){
 function MatchTemplates(src, circle){
     //create result string
     let resultsString = [];
+    let matchType = cv.TM_SQDIFF_NORMED;
+    console.group("Template matching");
     Object.entries(COINS).forEach(([key, value]) => {
-        let resultMat = new cv.Mat();
+
+        //check if src and template have the same type
+        if(src.type() !== COINS[key].edges.type()){
+            console.error("Type of src and template are not the same");
+            console.error("src: " + GetMatrixType(src));
+            console.error("template(edges): " + GetMatrixType(COINS[key].edges));
+            return;
+        }
+
+        console.log("---Matching template: " + key);
+        console.log("Size src: " + src.rows + "x" + src.cols);
+        console.log("Size template: " + COINS[key].template.rows + "x" + COINS[key].template.cols);
 
         //resize template to the size of src
         let templateResized = new cv.Mat();
-        cv.resize(COINS[key].template, templateResized, COINS[key].template.size(), 0, 0, cv.INTER_AREA);
+        cv.resize(COINS[key].edges, templateResized, COINS[key].template.size(), 0, 0, cv.INTER_AREA);
 
-        cv.matchTemplate(src, templateResized, resultMat, cv.TM_SQDIFF_NORMED);
+        console.log("Size resized template: " + templateResized.rows + "x" + templateResized.cols);
+        DownloadMatrixAsImage(src, "src.png");
+        DownloadMatrixAsImage(templateResized, key + "_resized.png");
+
+        let resultMat = new cv.Mat();
+        cv.matchTemplate(src, templateResized, resultMat, matchType);
 
         //get highest value
         let minMax = cv.minMaxLoc(resultMat);
@@ -141,11 +155,26 @@ function MatchTemplates(src, circle){
 
         resultsString.push(new Result(key, max));
 
+        console.log("Match value: " + max);
+
+        //free memory
         templateResized.delete();
+        resultMat.delete();
     });
+    console.groupEnd();
 
     //sort results from highest to lowest
-    resultsString.sort((a, b) => a.value - b.value);
+    if (matchType === cv.TM_SQDIFF ||
+        matchType === cv.TM_SQDIFF_NORMED) {
+        console.log("Sort from lowest to highest");
+        //lower values are better, so sort from lowest to highest
+        resultsString.sort((a, b) => a.value - b.value);
+    }else{
+        console.log("Sort from highest to lowest");
+        //higher values are better, so sort from highest to lowest
+        resultsString.sort((a, b) => b.value - a.value);
+    }
+
 
     console.dir(resultsString);
 

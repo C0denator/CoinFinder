@@ -113,14 +113,12 @@ function RotateMat(src, dist, angle){
  * @returns {Mat} The clipped matrix
  */
 function ClipCorners(src){
-    console.log("Clipping corners. src has type: " + GetMatrixType(src));
     //draw edges around the coin black
     let radius = src.cols/2;
     let center = new cv.Point(src.cols/2, src.rows/2);
 
     let mask = cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC1);
     cv.circle(mask, center, radius, [255, 255, 255, 255], -1);
-    console.log("Clipping corners. mask has type: " + GetMatrixType(mask));
 
     let maskedImage = new cv.Mat();
     let channels = new cv.MatVector();
@@ -137,8 +135,6 @@ function ClipCorners(src){
     //delete mats
     mask.delete();
     channels.delete();
-
-    console.log("Clipped corners. maskedImage has type: " + GetMatrixType(maskedImage));
 
     return maskedImage;
 }
@@ -252,6 +248,16 @@ function PrintHistogram(hist) {
 
     // Gruppe schließen
     console.groupEnd();
+}
+
+function ConvertC1ToC4(src){
+    if(src.channels() === 1){
+        let dst = new cv.Mat();
+        cv.cvtColor(src, dst, cv.COLOR_GRAY2RGBA);
+        return dst;
+    }
+    return src;
+
 }
 
 /**

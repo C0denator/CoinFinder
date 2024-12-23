@@ -120,7 +120,7 @@ function mainLoop() {
     let foundCircles = FindCircles(inputMat, guiMat);
     FilterCircles(foundCircles, guiMat);
     console.log("Found circles: " + foundCircles.length);
-    foundCircles.forEach(c => MatchTemplates(c.GetImageData(inputMat), c));
+    foundCircles.forEach(c => MatchTemplates(ConvertC1ToC4(DetectEdges(c.GetImageData(inputMat))), c));
     DrawCoinValue(foundCircles, guiMat);
     ShowTotalValue(foundCircles);
     DrawMemoryUsage(guiMat);
@@ -156,7 +156,7 @@ function DrawCoinValue(circles, dist){
     if (circles === undefined || circles.length === 0) {
         return;
     }
-    
+
     for(let i = 0; i < circles.length; i++){
         //does circle have "bestMatch" property?
         if (circles[i].bestMatch === undefined) {
