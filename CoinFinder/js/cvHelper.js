@@ -229,7 +229,7 @@ function ShowMemoryUsage(dst) {
         //Speichernutzung unten rechts anzeigen
         cv.putText(dst, "Memory: " + totalJSHeapSize + "MB / " + jsHeapSizeLimit + "MB (" + percentage + "%)", new cv.Point(dst.cols - 260, dst.rows - 10), cv.FONT_HERSHEY_SIMPLEX, 0.5, new cv.Scalar(255, 255, 255, 255), 1);
     } else {
-        console.log("Diese Funktion wird vom Browser nicht unterstützt");
+        console.warn("Diese Funktion wird vom Browser nicht unterstützt");
     }
 }
 

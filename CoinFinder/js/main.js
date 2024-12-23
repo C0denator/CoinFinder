@@ -82,10 +82,8 @@ window.addEventListener("load", function () {
         }
     });
     document.getElementById("showTemplates").addEventListener("click", () => {
-        let templates = Object.values(COINS).map(coin => coin.template);
-        let edgesTemplates = templates.map(template => DetectEdges(template));
+        let edgesTemplates = Object.values(COINS).map(coin => coin.edges);
         ShowMatrices(edgesTemplates, outputCanvas);
-        edgesTemplates.forEach(mat => mat.delete());
     });
 });
 
@@ -116,19 +114,28 @@ function mainLoop() {
 
     console.log("--- loop started");
 
-    videoCapture.read(inputMat);
+    // videoCapture.read(inputMat);
     videoCapture.read(guiMat);
+    //
+    // let foundCircles = FindCircles(inputMat, guiMat);
+    // FilterCircles(foundCircles, guiMat);
+    // //foundCircles.forEach(c => MatchTemplates())
+    //
+    // ShowMemoryUsage(guiMat);
+    // ShowMatrix(guiMat, outputCanvas);
 
-    let foundCircles = FindCircles(inputMat, guiMat);
-    FilterCircles(foundCircles, guiMat);
-    //foundCircles.forEach(c => MatchTemplates())
+    let templates = Object.values(COINS).map(coin => coin.template);
+    let clippedTemplates = templates.map(template => ClipCorners(template));
+    let edgesTemplates = clippedTemplates.map(template => DetectEdges(template));
 
-    ShowMemoryUsage(guiMat);
-    ShowMatrix(guiMat, outputCanvas);
+    ShowMatrices(edgesTemplates, outputCanvas);
+
+    clippedTemplates.forEach(mat => mat.delete());
+    edgesTemplates.forEach(mat => mat.delete());
 
     if(loopActive){
         waitingForAnimationFrame = true;
-        requestAnimationFrame(mainLoop);
+        setTimeout(mainLoop, 1000 / 30);
     }
 
     console.log("--- loop ended");

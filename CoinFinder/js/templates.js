@@ -3,7 +3,7 @@ window.addEventListener("load", () => {
 });
 
 const OnTemplatesLoaded = new Event('OnTemplatesLoaded');
-let path = "../newTemplates/"
+let path = "../templates_2/"
 
 function InitTemplates() {
     let coinLength = Object.keys(COINS).length;
@@ -23,6 +23,13 @@ function InitTemplates() {
             COINS[key].template = ClipCorners(src);
 
             //save edge image as matrix in the coin object
+            if(key==="Cent1" || key==="Cent2" || key==="Cent5"){
+                blurSize = 5;
+                console.log("blurSize set to " + blurSize + " with key: " + key);
+            }else{
+                blurSize = 7;
+                console.log("blurSize set to " + blurSize + " with key: " + key);
+            }
             COINS[key].edges = DetectEdges(COINS[key].template);
 
             //DownloadMatrixAsImage(COINS[key].edges, key + "_edges.png");
