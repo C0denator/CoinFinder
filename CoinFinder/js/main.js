@@ -104,7 +104,7 @@ function CheckIfLoadingFinished(){
 
 let waitingForAnimationFrame = false;
 let angle = 0;
-function mainLoop() {
+async function mainLoop() {
     if(!loadingFinished){
         console.warn("Can't start the loop because something is not loaded yet");
         return;
@@ -126,7 +126,11 @@ function mainLoop() {
     let foundCircles = FindCircles(inputMat, guiMat);
     FilterCircles(foundCircles, guiMat);
     console.log("Found circles: " + foundCircles.length);
-    foundCircles.forEach(c => MatchTemplates(ConvertC1ToC4(DetectEdges(c.GetImageData(inputMat), SettingsLive)), c));
+
+    await matchAllCircles(foundCircles);
+
+    console.log("after matchAllCircles");
+
     DrawCoinValue(foundCircles, guiMat);
     ShowTotalValue(foundCircles);
     DrawMemoryUsage(guiMat);
@@ -140,6 +144,13 @@ function mainLoop() {
     console.log("--- loop ended");
 }
 
+async function matchAllCircles(circles){
+    for (const c of circles) {
+        await MatchTemplates(ConvertC1ToC4(DetectEdges(c.GetImageData(inputMat), SettingsLive)), c);
+    }
+    console.log("All circles matched");
+}
+
 
 function ShowTotalValue(circles){
     let totalValueLabel = document.getElementById("value");
@@ -151,7 +162,7 @@ function ShowTotalValue(circles){
     let totalValue = 0;
     circles.forEach(c => {
         if(c.bestMatch !== undefined){
-            totalValue += c.bestMatch.value;
+            totalValue += NameToValue(c.bestMatch);
         }
     });
 
@@ -173,7 +184,7 @@ function DrawCoinValue(circles, dist){
             cv.putText(dist, "?", new cv.Point(circles[i].x, circles[i].y), cv.FONT_HERSHEY_SIMPLEX, 0.5, new cv.Scalar(255, 0, 255, 255), 1);
         }else{
             //print bestMatch
-            cv.putText(dist, circles[i].bestMatch.value.toString(), new cv.Point(circles[i].x-10, circles[i].y-6), cv.FONT_HERSHEY_SIMPLEX, 0.5, new cv.Scalar(255, 255, 255, 255), 1);
+            cv.putText(dist, circles[i].bestMatch, new cv.Point(circles[i].x-10, circles[i].y-6), cv.FONT_HERSHEY_SIMPLEX, 0.5, new cv.Scalar(255, 255, 255, 255), 1);
             cv.putText(dist, circles[i].matchValue.toString(), new cv.Point(circles[i].x-10, circles[i].y+6), cv.FONT_HERSHEY_SIMPLEX, 0.5, new cv.Scalar(255, 255, 255, 255), 1);
         }
     }

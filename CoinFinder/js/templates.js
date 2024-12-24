@@ -119,7 +119,7 @@ function InitHists(){
  * @param {Mat} src
  * @param {Circle} circle
  */
-function MatchTemplates(src, circle){
+async function MatchTemplates(src, circle){
     //create result string
     let matchType = cv.TM_SQDIFF_NORMED;
     let iterations = 180;
@@ -127,6 +127,10 @@ function MatchTemplates(src, circle){
     let allResults = [];
 
     for(let i = 0; i < iterations; i++){
+        //pause so the browser can update the gui
+        await new Promise(r => setTimeout(r, 0));
+
+
         let rotatedSrc = new cv.Mat();
         if(i>0){
             //rotate image
@@ -172,8 +176,9 @@ function MatchTemplates(src, circle){
         allResults.push(new Result("Iteration " + i, lowest, highest));
 
         //draw loading bar
-        /*DrawLoadingBar(guiMat, (i+1) / iterations);
-        ShowMatrix(guiMat, outputCanvas);*/
+        DrawLoadingBar(guiMat, (i+1) / iterations);
+        DrawMemoryUsage(guiMat);
+        ShowMatrix(guiMat, outputCanvas);
 
     }
 

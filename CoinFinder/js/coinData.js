@@ -32,3 +32,7 @@ let COINS = {
         value: 0.01
     }
 }
+
+function NameToValue(name){
+    return COINS[name].value;
+}

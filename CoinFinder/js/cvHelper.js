@@ -222,8 +222,11 @@ function DrawMemoryUsage(dst) {
 
         let percentage = Math.round(totalJSHeapSize / jsHeapSizeLimit * 100);
 
+        //clear area
+        cv.rectangle(dst, new cv.Point(dst.cols - 280, 0), new cv.Point(dst.cols, + 30), [0, 0, 0, 255], -1);
+
         //Speichernutzung unten rechts anzeigen
-        cv.putText(dst, "Memory: " + totalJSHeapSize + "MB / " + jsHeapSizeLimit + "MB (" + percentage + "%)", new cv.Point(dst.cols - 260, dst.rows - 10), cv.FONT_HERSHEY_SIMPLEX, 0.5, new cv.Scalar(255, 255, 255, 255), 1);
+        cv.putText(dst, "Memory: " + totalJSHeapSize + "MB / " + jsHeapSizeLimit + "MB (" + percentage + "%)", new cv.Point(dst.cols - 260, + 20), cv.FONT_HERSHEY_SIMPLEX, 0.5, new cv.Scalar(255, 255, 255, 255), 1);
     } else {
         console.warn("Diese Funktion wird vom Browser nicht unterstützt");
     }
