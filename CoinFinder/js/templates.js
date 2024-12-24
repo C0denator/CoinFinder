@@ -121,8 +121,8 @@ function InitHists(){
  */
 async function MatchTemplates(src, circle){
     //create result string
-    let matchType = cv.TM_SQDIFF_NORMED;
-    let iterations = 180;
+    let matchType = cv.TM_CCOEFF_NORMED;
+    let iterations = 360;
     let angleStep = 360 / iterations;
     let allResults = [];
 
@@ -179,7 +179,7 @@ async function MatchTemplates(src, circle){
         DrawLoadingBar(guiMat, (i+1) / iterations);
         DrawMemoryUsage(guiMat);
         ShowMatrix(guiMat, outputCanvas);
-
+        //ShowMatrices([guiMat, src, rotatedSrc, COINS[lowest.name].edges],outputCanvas);
     }
 
     console.log("Results for all iterations:");
@@ -204,6 +204,8 @@ async function MatchTemplates(src, circle){
 
     //set matchValue to 2 decimal places
     circle.matchValue = Math.round(circle.matchValue * 100) / 100;
+
+    DrawCoinValue([circle], guiMat);
 
     src.delete();
 }

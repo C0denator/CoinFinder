@@ -130,8 +130,6 @@ async function mainLoop() {
     await matchAllCircles(foundCircles);
 
     console.log("after matchAllCircles");
-
-    DrawCoinValue(foundCircles, guiMat);
     ShowTotalValue(foundCircles);
     DrawMemoryUsage(guiMat);
     ShowMatrix(guiMat, outputCanvas);
