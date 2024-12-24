@@ -117,10 +117,16 @@ function mainLoop() {
     videoCapture.read(inputMat);
     videoCapture.read(guiMat);
 
+    /*let edges = DetectEdges(inputMat, SettingsLive);
+    ShowMatrix(edges, outputCanvas);
+    //free the memory
+    edges.delete();*/
+
+
     let foundCircles = FindCircles(inputMat, guiMat);
     FilterCircles(foundCircles, guiMat);
     console.log("Found circles: " + foundCircles.length);
-    foundCircles.forEach(c => MatchTemplates(ConvertC1ToC4(DetectEdges(c.GetImageData(inputMat))), c));
+    foundCircles.forEach(c => MatchTemplates(ConvertC1ToC4(DetectEdges(c.GetImageData(inputMat), SettingsLive)), c));
     DrawCoinValue(foundCircles, guiMat);
     ShowTotalValue(foundCircles);
     DrawMemoryUsage(guiMat);
@@ -148,6 +154,9 @@ function ShowTotalValue(circles){
             totalValue += c.bestMatch.value;
         }
     });
+
+    //round to 2 decimal places
+    totalValue = Math.round(totalValue * 100) / 100;
 
     totalValueLabel.innerText = totalValue + "€";
 }

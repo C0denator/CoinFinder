@@ -26,7 +26,7 @@ function InitTemplates() {
             }else{
                 blurSize = 7;
             }
-            COINS[key].edges = ConvertC1ToC4(DetectEdges(COINS[key].template));
+            COINS[key].edges = ConvertC1ToC4(DetectEdges(COINS[key].template, SettingsTemplate));
 
             //DownloadMatrixAsImage(COINS[key].edges, key + "_edges.png");
 
@@ -122,7 +122,7 @@ function InitHists(){
 function MatchTemplates(src, circle){
     //create result string
     let resultsString = [];
-    let matchType = cv.TM_SQDIFF_NORMED;
+    let matchType = cv.TM_CCORR_NORMED;
     console.group("Template matching");
     Object.entries(COINS).forEach(([key, value]) => {
 
@@ -140,11 +140,12 @@ function MatchTemplates(src, circle){
 
         //resize template to the size of src
         let templateResized = new cv.Mat();
-        cv.resize(COINS[key].edges, templateResized, COINS[key].template.size(), 0, 0, cv.INTER_AREA);
+        cv.resize(COINS[key].edges, templateResized, src.size(), 0, 0, cv.INTER_AREA);
 
         console.log("Size resized template: " + templateResized.rows + "x" + templateResized.cols);
-        DownloadMatrixAsImage(src, "src.png");
-        DownloadMatrixAsImage(templateResized, key + "_resized.png");
+        //DownloadMatrixAsImage(src, "src.png");
+        //DownloadMatrixAsImage(COINS[key].edges, key + "_template.png");
+        //DownloadMatrixAsImage(templateResized, key + "_templateResized.png");
 
         let resultMat = new cv.Mat();
         cv.matchTemplate(src, templateResized, resultMat, matchType);
