@@ -89,7 +89,7 @@ function ShowMatrices(src, canvas) {
  * @param {Mat} dist Die Matrix, in die das Ergebnis geschrieben wird
  * @param {number} angle Der Winkel in Grad
  */
-function RotateMat(src, dist, angle){
+function RotateMatrix(src, dist, angle){
 
     let center = new cv.Point(src.cols / 2, src.rows / 2);
     let interpolation = cv.INTER_LINEAR;
@@ -317,4 +317,28 @@ const MatTypes = {
     CV_32SC3: 20, CV_32FC3: 21, CV_64FC3: 22,
     CV_8UC4: 24,  CV_8SC4: 25,  CV_16UC4: 26, CV_16SC4: 27,
     CV_32SC4: 28, CV_32FC4: 29, CV_64FC4: 30
+}
+
+function DrawLoadingBar(dist, value){
+    //clamp value between 0 and 1
+    value = Math.min(1, Math.max(0, value));
+
+    let outerMargin = 10;
+    let outerHeight = 15;
+    let innerMargin = 4;
+    let startPosition = new cv.Point(outerMargin, dist.rows-outerMargin-outerHeight);
+    let endPosition = new cv.Point(dist.cols-outerMargin, dist.rows-outerMargin);
+
+    //draw outer frame
+    cv.rectangle(dist, startPosition, endPosition, [255, 255, 255, 255], -1);
+
+    //draw inner frame
+    let innerStartPosition = new cv.Point(startPosition.x + innerMargin, startPosition.y + innerMargin);
+    let innerEndPosition = new cv.Point(endPosition.x - innerMargin, endPosition.y - innerMargin);
+    cv.rectangle(dist, innerStartPosition, innerEndPosition, [0, 0, 0, 255], -1);
+
+    //draw progress bar
+    let progressEndPosition = new cv.Point(innerStartPosition.x + (innerEndPosition.x - innerStartPosition.x) * value, innerEndPosition.y);
+    cv.rectangle(dist, innerStartPosition, progressEndPosition, [0, 175, 0, 255], -1);
+
 }

@@ -121,67 +121,81 @@ function InitHists(){
  */
 function MatchTemplates(src, circle){
     //create result string
-    let resultsString = [];
-    let matchType = cv.TM_CCORR_NORMED;
-    console.group("Template matching");
-    Object.entries(COINS).forEach(([key, value]) => {
+    let matchType = cv.TM_SQDIFF_NORMED;
+    let iterations = 180;
+    let angleStep = 360 / iterations;
+    let allResults = [];
 
-        //check if src and template have the same type
-        if(src.type() !== COINS[key].edges.type()){
-            console.error("Type of src and template are not the same");
-            console.error("src: " + GetMatrixType(src));
-            console.error("template(edges): " + GetMatrixType(COINS[key].edges));
-            return;
+    for(let i = 0; i < iterations; i++){
+        let rotatedSrc = new cv.Mat();
+        if(i>0){
+            //rotate image
+            RotateMatrix(src, rotatedSrc, angleStep * i);
+        }else{
+            rotatedSrc = src.clone();
         }
 
-        console.log("---Matching template: " + key);
-        console.log("Size src: " + src.rows + "x" + src.cols);
-        console.log("Size template: " + COINS[key].template.rows + "x" + COINS[key].template.cols);
+        let templateSimilarity = [];
+        Object.entries(COINS).forEach(([key, value]) => {
 
-        //resize template to the size of src
-        let templateResized = new cv.Mat();
-        cv.resize(COINS[key].edges, templateResized, src.size(), 0, 0, cv.INTER_AREA);
+            //check if src and template have the same type
+            if(rotatedSrc.type() !== COINS[key].edges.type()){
+                console.error("Type of src and template are not the same");
+                console.error("src: " + GetMatrixType(rotatedSrc));
+                console.error("template(edges): " + GetMatrixType(COINS[key].edges));
+                return;
+            }
 
-        console.log("Size resized template: " + templateResized.rows + "x" + templateResized.cols);
-        //DownloadMatrixAsImage(src, "src.png");
-        //DownloadMatrixAsImage(COINS[key].edges, key + "_template.png");
-        //DownloadMatrixAsImage(templateResized, key + "_templateResized.png");
+            let templateResized = new cv.Mat();
+            cv.resize(COINS[key].edges, templateResized, rotatedSrc.size(), 0, 0, cv.INTER_AREA);
 
-        let resultMat = new cv.Mat();
-        cv.matchTemplate(src, templateResized, resultMat, matchType);
+            let resultMat = new cv.Mat();
+            cv.matchTemplate(rotatedSrc, templateResized, resultMat, matchType);
 
-        //get highest value
-        let minMax = cv.minMaxLoc(resultMat);
-        let max = minMax.maxVal;
+            //get highest and lowest value
+            let minMax = cv.minMaxLoc(resultMat);
+            let max = minMax.maxVal;
+            let min = minMax.minVal;
 
-        resultsString.push(new Result(key, max));
+            templateSimilarity.push(new Result(key, min, max));
 
-        console.log("Match value: " + max);
+            //console.log("Match value: " + max);
 
-        //free memory
-        templateResized.delete();
-        resultMat.delete();
-    });
-    console.groupEnd();
+            //free memory
+            templateResized.delete();
+            resultMat.delete();
+        });
+
+        //find lowest and highest value
+        let lowest = templateSimilarity.reduce((prev, current) => (prev.min < current.min) ? prev : current);
+        let highest = templateSimilarity.reduce((prev, current) => (prev.max > current.max) ? prev : current);
+        allResults.push(new Result("Iteration " + i, lowest, highest));
+
+        //draw loading bar
+        /*DrawLoadingBar(guiMat, (i+1) / iterations);
+        ShowMatrix(guiMat, outputCanvas);*/
+
+    }
+
+    console.log("Results for all iterations:");
+    console.dir(allResults);
 
     //sort results from highest to lowest
     if (matchType === cv.TM_SQDIFF ||
         matchType === cv.TM_SQDIFF_NORMED) {
-        console.log("Sort from lowest to highest");
-        //lower values are better, so sort from lowest to highest
-        resultsString.sort((a, b) => a.value - b.value);
+        //find lowest value
+        allResults.sort((a, b) => a.min.min - b.min.min);
+        circle.matchValue = allResults[0].min.min;
+        circle.bestMatch = allResults[0].min.name;
     }else{
-        console.log("Sort from highest to lowest");
-        //higher values are better, so sort from highest to lowest
-        resultsString.sort((a, b) => b.value - a.value);
+        //find highest value
+        allResults.sort((a, b) => b.max.max - a.max.max);
+        circle.matchValue = allResults[0].max.max;
+        circle.bestMatch = allResults[0].max.name;
     }
 
-
-    console.dir(resultsString);
-
-    //save bestmatch in circle
-    circle.bestMatch = COINS[resultsString[0].name];
-    circle.matchValue = resultsString[0].value;
+    console.log("Best match:");
+    console.dir(allResults[0]);
 
     //set matchValue to 2 decimal places
     circle.matchValue = Math.round(circle.matchValue * 100) / 100;
@@ -191,11 +205,13 @@ function MatchTemplates(src, circle){
 
 class Result {
     name;
-    value;
+    min;
+    max;
 
-    constructor(name, value){
+    constructor(name, min, max){
         this.name = name;
-        this.value = value;
+        this.min = min;
+        this.max = max;
     }
 
 }
