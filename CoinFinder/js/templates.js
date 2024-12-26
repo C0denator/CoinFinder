@@ -18,7 +18,9 @@ function InitTemplates() {
             let src = cv.imread(img);
 
             //save image as matrix in the coin object
-            COINS[key].template = ClipCorners(src);
+            let croppedMat = CropMatrix(src, 20);
+            let clippedMat = ClipCorners(croppedMat);
+            COINS[key].template = clippedMat;
 
             //save edge image as matrix in the coin object
             if(key==="Cent1" || key==="Cent2" || key==="Cent5"){
@@ -38,6 +40,9 @@ function InitTemplates() {
                 console.dir(COINS);
                 document.dispatchEvent(OnTemplatesLoaded);
             }
+
+            croppedMat.delete();
+            src.delete();
         }
 
         img.onerror = () => {
@@ -121,7 +126,7 @@ function InitHists(){
  */
 async function MatchTemplates(src, circle){
     //create result string
-    let matchType = cv.TM_CCOEFF_NORMED;
+    let matchType = cv.TM_SQDIFF_NORMED;
     let iterations = 360;
     let angleStep = 360 / iterations;
     let allResults = [];
@@ -140,6 +145,7 @@ async function MatchTemplates(src, circle){
         }
 
         let templateSimilarity = [];
+        let andMat = new cv.Mat();
         Object.entries(COINS).forEach(([key, value]) => {
 
             //check if src and template have the same type
@@ -155,6 +161,7 @@ async function MatchTemplates(src, circle){
 
             let resultMat = new cv.Mat();
             cv.matchTemplate(rotatedSrc, templateResized, resultMat, matchType);
+            if(key === "Cent50") cv.bitwise_and(rotatedSrc, templateResized, andMat);
 
             //get highest and lowest value
             let minMax = cv.minMaxLoc(resultMat);
@@ -178,8 +185,9 @@ async function MatchTemplates(src, circle){
         //draw loading bar
         DrawLoadingBar(guiMat, (i+1) / iterations);
         DrawMemoryUsage(guiMat);
-        ShowMatrix(guiMat, outputCanvas);
-        //ShowMatrices([guiMat, src, rotatedSrc, COINS[lowest.name].edges],outputCanvas);
+        //ShowMatrix(guiMat, outputCanvas);
+        ShowMatrices([guiMat, COINS[lowest.name].edges, rotatedSrc, andMat],outputCanvas);
+        andMat.delete();
     }
 
     console.log("Results for all iterations:");

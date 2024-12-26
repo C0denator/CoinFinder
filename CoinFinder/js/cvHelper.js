@@ -94,7 +94,7 @@ function RotateMatrix(src, dist, angle){
     let center = new cv.Point(src.cols / 2, src.rows / 2);
     let interpolation = cv.INTER_LINEAR;
     let borderMode = cv.BORDER_CONSTANT;
-    let borderValue = new cv.Scalar();
+    let borderValue = new cv.Scalar(0, 0, 0, 255);
 
     //Rotationsmatrix erstellen
     let rotationMatrix = cv.getRotationMatrix2D(center, angle, 1);
@@ -138,6 +138,36 @@ function ClipCorners(src){
 
     return maskedImage;
 }
+
+/**
+ * Crops a matrix by a certain amount of pixels
+ * @param {Mat} src The matrix to crop
+ * @param {number} pixelsToCrop The amount of pixels to crop from each side
+ * @returns {Mat} The cropped matrix
+ */
+function CropMatrix(src, pixelsToCrop) {
+    // Überprüfen, ob die Anzahl der zu beschneidenden Pixel gültig ist
+    if (pixelsToCrop <= 0 ||
+        pixelsToCrop * 2 >= src.rows ||
+        pixelsToCrop * 2 >= src.cols) {
+        console.error("Ungültige Anzahl von Pixeln zum Zuschneiden.");
+        return null;
+    }
+
+    // ROI (Region of Interest) definieren
+    let rect = new cv.Rect(
+        pixelsToCrop,                 // x (linker Rand)
+        pixelsToCrop,                 // y (oberer Rand)
+        src.cols - 2 * pixelsToCrop,  // Breite
+        src.rows - 2 * pixelsToCrop   // Höhe
+    );
+
+    // ROI anwenden und die Matrix zuschneiden
+    let croppedMat = src.roi(rect);
+
+    return croppedMat;
+}
+
 
 /**
  * Lässt den Benutzer die übergebene Matrix als Bild herunterladen
