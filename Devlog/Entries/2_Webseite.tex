@@ -1,16 +1,16 @@
 \section{Erstellen der Webseite}
 
 \subsection{openCV.js}
-Als aller erstes brauchen wir natürlich eine aktuelle Version von openCV.js. Diese können wir direkt von der offiziellen openCV-Webseite herunterladen:
+Als aller erstes braucht es natürlich eine aktuelle Version von openCV.js. Diese kann direkt von der offiziellen openCV-Webseite herunterladen:
 
 \href{https://docs.opencv.org/4.10.0/opencv.js}{https://docs.opencv.org/4.10.0/opencv.js}
 
-Speichere die Datei in deinem Projektverzeichnis und binde sie in deiner HTML-Datei wie eine normale JavaScript-Datei ein.
+Es handelt sich hierbei um eine mittels Emscripten kompilierte Version von OpenCV, welche in JavaScript ausgeführt werden kann. Da der Programmcode nur in Bytecode zur Verfügung steht, ist es nicht möglich, den Code direkt zu lesen oder zu verändern. Dies führt zu dem Problem, dass IDE-Funktionalitäten wie Autovervollständigung oder Syntax-Highlighting leider nicht verfügbar sind. 
 
 \subsection{Grundaufbau der Webseite}
 Für unsere Webanwendung benötigen wir zunächst eine simple HTML-Struktur mit mindestens zwei Elementen: einem Video-Element für den Kamerastream und einem Canvas-Element, auf welchem wir die Bildverarbeitungsergebnisse anzeigen können. Beide Elemente sollten idealerweise übereinander liegen und die selbe Größe haben.
 
-Die html-Datei könnte also wie folgt aussehen:
+Nach einigen Tests habe ich mich für folgende Struktur entschieden:
 \begin{lstlisting}[style=HTML]
 <!DOCTYPE html>
 <html lang="de">
@@ -25,11 +25,11 @@ Die html-Datei könnte also wie folgt aussehen:
 <div id="mainContainer">
     <div id="textContainer">
         <h1>CoinFinder</h1>
-        <p>Aktueller Wert: <span id="value">0</span>€</p>
+        <h3>Aktueller Wert: <span id="value">0</span></h3>
     </div>
     <div class="container" id="videoContainer">
         <video id="video" width="720" height="540" autoplay muted loop></video>
-        <canvas id="canvas" width="720" height="540"></canvas>
+        <canvas id="outputCanvas" width="720" height="540"></canvas>
     </div>
 </div>
 </body>
@@ -39,78 +39,116 @@ Die html-Datei könnte also wie folgt aussehen:
 Und die dazugehörige CSS-Datei:
 
 \begin{lstlisting}[style=CSS]
-*{
-    box-sizing: border-box;
-}
-
-html, body {
-    background-color: #18204d;
-    color: #ffffff;
-    font-family: Arial, Helvetica, sans-serif;
-}
-
-#mainContainer{
-    position: relative;
-    width: 97vw;
-    height: 97dvh;
-    display: flex;
-    flex-direction: column;
-}
-
-#textContainer{
-    display: flex;
-    align-items: center;
-    margin: 0 1em 0 1em;
-}
-
-#videoContainer{
-    position: relative;
-    height: 100%;
-    width: 100%;
-    flex-grow: 1;
-    align-items: center;
-    justify-content: center;
-    display: flex;
-
-}
-
-#video, #canvas {
-    height: 100%;
-    width: 100%;
-    left: 0;
-    top: 0;
-    position: absolute;
-    aspect-ratio: inherit;
-    object-fit: contain;
-}
-
-#mainContainer{
-    border: 0.5em solid #ffa300;
-}
-
-#videoContainer{
-    border: 0.5em solid blue;
-}
+    *{
+        box-sizing: border-box;
+    }
+    
+    html, body {
+        background-color: #18204d;
+        color: #ffffff;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+    
+    h3{
+        margin: 0 0 0 1em;
+    }
+    
+    #mainContainer{
+        position: relative;
+        width: 97vw;
+        height: 97dvh;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    #textContainer{
+        display: flex;
+        align-items: center;
+    }
+    
+    #textContainer > *{
+        margin: 0 1em 0 1em;
+    }
+    
+    button{
+        background-color: #ffa300;
+        color: #18204d;
+        border: none;
+        padding: 0.5em 1em;
+        font-size: 1em;
+        cursor: pointer;
+    }
+    
+    #videoContainer{
+        position: relative;
+        height: 100%;
+        width: 100%;
+        flex-grow: 1;
+        align-items: center;
+        justify-content: center;
+        display: flex;
+    
+    }
+    
+    #video, #outputCanvas {
+        height: 100%;
+        width: 100%;
+        left: 0;
+        top: 0;
+        position: absolute;
+        aspect-ratio: inherit;
+        object-fit: contain;
+    }
+    
+    #outputCanvas{
+        image-rendering: pixelated;
+    }
+    
+    #mainContainer{
+        border: 0.5em solid #ffa300;
+    }
+    
+    #videoContainer{
+        border: 0.5em solid blue;
+    }
+    
 \end{lstlisting}
 
+Nun haben wir ein Canvas-Element, welches über dem Video-Element liegt und exakt die selbe Größe hat. Dies ermöglicht es mir, die Bildverarbeitungsergebnisse direkt auf dem dem Canvas zu zeichnen und sie dem Nutzer anzuzeigen. Der Canvas hat zudem die Eigenschaft "image-rendering: pixelated" um auf kleinere Bilder scharf zu zeichnen.
+
+Als nächstes braucht es nun grundlegende Methoden, um auf die Kamera des Nutzers zuzugreifen und den Videostream auf dem Video-Element anzuzeigen.
+
 \subsection{Grundlegende openCV Methoden}
-Zunächst benötigen wir eine Methode, um auf die Kamera des Nutzers zuzugreifen und den Videostream auf dem Video-Element anzuzeigen. Dafür können wir die getUserMedia-API verwenden. Zur Sicherheit führen wir Funktionen mit openCV-Funktionalitäten erst nach dem window.onload-Event aus, um sicherzustellen, dass alle Elemente, insbesondere die 10MB große openCV.js Bibliothek, vollständig geladen sind:
+Um auf die Kamera des Nutzers zuzugreifen, kann man unter anderem ein openCV-VideoCapture-Objekt verwenden. Dieses Objekt kann entweder direkt auf ein Video-Element zugreifen oder auf eine Videodatei. Da wir in unserem Fall den Kamerastream verwenden wollen, greifen wir direkt auf das Video-Element zu. Für den Zugriff auf die Webkamera benötigen wir die getUserMedia()-Methode des MediaDevices-Interfaces. Um sicherzustellen, dass openCV vollständig geladen ist, warten wir auf das "load"-Event des Fensters und initialisieren erst dann die Kamera:
 
 \begin{lstlisting}[style=JavaScript]
-    window.onload = () => {
+    window.addEventListener("load", function () {
         video = document.getElementById('video');
-    
-        // Webcam stream erhalten
+        outputCanvas = document.getElementById('outputCanvas');
+        videoContainer = document.getElementById('videoContainer');
+
+        // get the camera
         navigator.mediaDevices.getUserMedia({
             video: true,
             audio: false
         }).then(stream => {
             video.srcObject = stream;
             video.onloadedmetadata = () => {
-                video.play();
+                video.play()
 
-                //start the main loop
-                requestAnimationFrame(mainLoop);
+                //print camera stats
+                console.log("Camera resolution: " + video.videoWidth + "x" + video.videoHeight);
+                console.log("Camera frame rate: " + stream.getVideoTracks()[0].getSettings().frameRate+ " fps");
+
+                //initialize the inputMat-Matrix
+                inputMat = new cv.Mat(video.height, video.width, cv.CV_8UC4);
+                guiMat = new cv.Mat(video.height, video.width, cv.CV_8UC4);
+                videoCapture = new cv.VideoCapture(video);
+
+                //check if everything is loaded
+                cameraLoaded = true;
+                console.log("Camera loaded");
+                CheckIfLoadingFinished();
             };
         }).catch(error => {
             console.error('Error accessing the camera: ', error);
@@ -119,51 +157,47 @@ Zunächst benötigen wir eine Methode, um auf die Kamera des Nutzers zuzugreifen
 }
 \end{lstlisting}
 
-Um mit openCV arbeiten zu können. brauchen wir eine Möglichkeit die Bilddaten aus dem Video-Element zu extrahieren und in eine openCV-Matrix zu konvertieren. Dafür können wir die cv.imread()-Methode verwenden, jedoch braucht diese ein HTML-Canvas-Element als Argument. Wir können also nicht direkt das Video-Element übergeben, sondern müssen zuerst die Bilddaten auf ein Canvas-Element zeichnen. Dafür erstellen wir uns einen neuen Canvas, welcher nur im JavaScript-Code existiert und nicht Teil des DOM ist. Nachdem wir den aktuellen Frame auf das Canvas gezeichnet haben, können wir die Bilddaten mit cv.imread() in eine openCV-Matrix konvertieren:
+Nachdem die Kamera initialisiert ist, kann die read()-Methode des VideoCapture-Objekts verwendet werden, um den aktuellen Frame des Videostreams in eine openCV-Matrix zu konvertieren. 
+
+Nun brauchen wir jedoch noch eine Methode, um eine openCV-Matrix auf einem Canvas ausgeben zu können. Dafür können wir die cv.imshow()-Methode verwenden, welche eine Matrix auf ein Canvas-Element zeichnet. In unserem Fall verwenden wir das outputCanvas-Element, welches über dem Video-Element liegt. Die Funktion sieht wie folgt aus:
 
 \begin{lstlisting}[style=JavaScript]
-let tempCanvas = document.createElement('canvas');
-let tempCtx= tempCanvas.getContext('2d', { willReadFrequently: true });
-function GetFrame(){
-    //Größe des temp. Canvas auf die Größe des output Canvas setzen
-    tempCanvas.width = outputCanvas.width;
-    tempCanvas.height = outputCanvas.height;
-
-    //Bilddaten des Videos auf das temp. Canvas zeichnen
-    tempCtx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
-
-    //Bilddaten in openCV-Matrix konvertieren und zurückgeben
-    return cv.imread(tempCanvas);
-}
-\end{lstlisting}
-
-Bevor wir nun mit der Kreiserkennung beginnen, sollten wir uns noch eine Methode schreiben, um die Änderungen die wir machen auch in unserer Webanwendung anzuzeigen. Dafür können wir die cv.imshow()-Methode verwenden. Auch diese benötigt wieder ein Canvas-Element als Argument, in unserem Fall nehmen wir unseren bereits definierten outputCanvas, welcher direkt über unserem Video-Element liegt. In der Regel benutzen wir eine Matrix nicht weiter, nachdem wir sie auf das Canvas gezeichnet haben, deshalb können wir sie in der Methode direkt wieder freigeben, um Speicherplatz zu sparen und Speicherlecks zu vermeiden:
-
-\begin{lstlisting}[style=JavaScript]
-function ShowFrame(inputMat){
-    cv.imshow('canvas', inputMat); //Matrix auf Canvas zeichnen
-    inputMat.delete(); //free memory
+function ShowMatrix(src, canvas){
+    cv.imshow(canvas, src);
 }
 \end{lstlisting}
 
 Hinweis zur Speicherfreigabe: openCV.js verwaltet den Speicher nicht automatisch, wie es bei JavaScript üblich ist. Das bedeutet, dass wir selbst dafür verantwortlich sind, den Speicher freizugeben, sobald wir ihn nicht mehr benötigen. Dies betrifft hauptsächlich Objekte vom Typ cv.Mat, welche wir mit der delete()-Methode freigeben können. Tun wir dies nicht, verbraucht der Browser mit jedem neuen Aufruf von new cv.Mat() oder cv.imread() mehr Speicher, bis irgendwann der Browsertab abstürzt. Sollte dein Programm nach einigen Sekunden oder Minuten aufhören zu funktionieren, könnte dies ein Hinweis auf ein Speicherleck sein. Schaue in diesem Fall in die Konsole nach einer entsprechenden Fehlermeldung.
 
-Zu guter Letzt benötigen wir noch einen Hauptloop, welcher die Bilddaten aus dem Video-Element extrahiert, die Kreiserkennung durchführt und das Ergebnis auf dem Canvas-Element anzeigt. Dafür können wir die requestAnimationFrame()-Methode verwenden, welche uns eine optimale Bildwiederholrate garantiert. Rufe die Methode am Besten nach dem Laden der Kamera auf, um sicherzustellen, dass alle Elemente vollständig geladen sind:
+Zu guter Letzt benötigen wir noch einen Hauptloop, welcher die Bilddaten aus dem Video-Element extrahiert, die Kreiserkennung durchführt und das Ergebnis auf dem Canvas-Element anzeigt. Dafür können wir die requestAnimationFrame()-Methode verwenden, welche uns eine optimale Bildwiederholrate garantiert. Ich habe zusätzlich einen Bool "loopActive" hinzugefügt, um den Loop bei Bedarf auch nur einmalig ausführen zu können. Der Loop sieht wie folgt aus:
 
 \begin{lstlisting}[style=JavaScript]
+let waitingForAnimationFrame = false;
+let angle = 0;
 function mainLoop() {
-    let currentFrame = GetFrame();
-    
-    //Unsere Bildverarbeitungsmethoden kommen hier rein
+    if(!loadingFinished){
+        console.warn("Can't start the loop because something is not loaded yet");
+        return;
+    }
 
-    ShowFrame(currentFrame);
-    requestAnimationFrame(mainLoop); //Funktion wiederholen
+    waitingForAnimationFrame = false;
+
+    console.log("--- loop started");
+
+    videoCapture.read(inputMat);
+    videoCapture.read(guiMat);
+
+    //do something with the matrix
+    
+    ShowMatrix(guiMat, outputCanvas);
+
+    if(loopActive){
+        waitingForAnimationFrame = true;
+        requestAnimationFrame(mainLoop);
+    }
+
+    console.log("--- loop ended");
 }
 \end{lstlisting}
 
 Nun sind wir bereit, mit der Kreiserkennung zu beginnen. Im nächsten Abschnitt werden wir uns die Circle Hough Transform genauer ansehen und sie auf unser Beispiel anwenden.
-Wenn Probleme im Bereich der Bildverarbeitung gelöst werden sollen, fällt die Wahl häufig auf OpenCV. Und das nicht ohne Grund: OpenCV bietet ein rießiges Spektrum an Funktionen und Algorithmen, von einfachen Bildoperationen hin zu ausgereiften Algorithmen der Gesichtserkennung, Bildsegmentierung und Objekterkennung. Auch Maschinelles Lernen und Deep Learning sind in OpenCV integriert.
-
-Die Wahl der Bibliothek wäre somit schnell getroffen, wenn wir nicht noch ein weiteres Kriterium hätten: die Webanwendung. Da OpenCV jedoch ursprünglich in C++ geschrieben ist, ist das primäre Interface, mit welchem auf die Funktionaltiätenzugegriffen wird, auch in C++ verfasst. Es gibt zwar mit Java und Python auch noch weitere alternative Schnittstellen, jedoch soll unsere Webanwendung, wie bereits oben erwähnt, nicht auf einem Server laufen, sondern direkt im Browser des Clients. Die Lösung: openCV.js.
-
-Als relativ neuer Bestandteil des openCV-Projektes, ist openCV.js eine JavaScript-Portierung der OpenCV-Bibliothek. Sie ermöglicht es, OpenCV-Funktionen direkt im Browser auszuführen, ohne dass der Nutzer eine zusätzliche Software installieren muss. Somit können wir die volle Bandbreite der OpenCV-Funktionen nutzen, ohne auf die Vorteile einer Webanwendung verzichten zu müssen.

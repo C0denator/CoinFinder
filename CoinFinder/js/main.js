@@ -21,12 +21,11 @@ let guiMat;
 let loopActive = false;
 
 window.addEventListener("load", function () {
-    console.log("Page loaded");
     video = document.getElementById('video');
     outputCanvas = document.getElementById('outputCanvas');
     videoContainer = document.getElementById('videoContainer');
 
-    // Webcam stream erhalten
+    // get the camera
     navigator.mediaDevices.getUserMedia({
         video: true,
         audio: false
@@ -38,9 +37,6 @@ window.addEventListener("load", function () {
             //print camera stats
             console.log("Camera resolution: " + video.videoWidth + "x" + video.videoHeight);
             console.log("Camera frame rate: " + stream.getVideoTracks()[0].getSettings().frameRate+ " fps");
-
-            //set the aspect ratio of the video to the div
-            //videoContainer.style.aspectRatio = (video.videoWidth).toString() + " / " + (video.videoHeight).toString();
 
             //initialize the inputMat-Matrix
             inputMat = new cv.Mat(video.height, video.width, cv.CV_8UC4);

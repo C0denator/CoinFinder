@@ -1,7 +1,134 @@
 \section{Eingriffe zur Laufzeit}
 
 \subsection{Die Bedeutung von einfachem Testing}
+Meine nächste Aufgabe, die Implementierung der Kreiserkennung, erfordert eine Menge an Feintuning und Anpassungen. Jeder Parameter muss sorgfältig gewählt werden, um ein optimales Ergebnis zu erzielen. Zudem kann ich vorhinein nicht ermittelt werden, welche Parameter die besten sind. Es ist also ein iterativer Prozess, bei dem ich die Parameter anpasse, das Ergebnis betrachte und dann erneut die Parameter anpasse.
+
+Nun stelle man sich vor, man müsste für jede kleine Änderung die Webseite neu laden, die Kamera neu ausrichten und die Münzen neu platzieren. Um diesen Prozess deutlich zu beschleunigen, habe ich mich dazu entschieden, einige Eingriffe zur Laufzeit zu implementieren. Diese Eingriffe sollen es mir ermöglichen, die Parameter der Kreiserkennung und weiterer openCV Funktionen direkt zur Laufzeit zu verändern, ohne die Webseite neu laden zu müssen, und somit schnell die besten Parameter zu finden.
 
 \subsection{Variablen-Slider}
+Meine Idee war es, für jede Variable im JavaScript-Code einen Slider zu erstellen zu können, mit dem ich schnell und einfach den Wert der Variable verändern kann. Dieser Slider soll dann den Wert der Variable anzeigen und bei Veränderung den Wert der Variable ändern.
+
+Für die Slider habe ich die Bibliothek \href{https://refreshless.com/nouislider/}{noUISlider} verwendet.  Über die data-Attribute von den HTML-Elementen kann unkompliziert der Wertebereich und die Schrittweite des Sliders festgelegt werden.
+
+Nun muss aber standardmäßg ein Event-Listener für jeden Slider erstellt werden, der bei Veränderung den Wert einer Variable ändert. Da ich jedoch nicht für jede Variable einen eigenen Event-Listener erstellen möchte, habe ich mich für einen anderen Ansatz entschieden. Stattdessen soll man direkt im HTML-Element des Sliders angeben können, welche Variable durch diesen Slider verändert werden soll.
+
+Hierfür benötigen wir zum Ersten ein eigenes data-Attribute von HTML, in welchem der Name der zu verändernen Varaible angegeben wird. Zum Zweiten benötigen wir eine Funktion, die alle Slider-Elemente durchgeht und für jedes Element den Event-Listener erstellt. Anschließend braucht es noch eine Möglichkeit den String-Namen der Variable in eine Referenz auf die Variable umzuwandeln.
+
+Die Event-Listener Funktion sieht dann wie folgt aus:
+
+\begin{lstlisting}[style=JavaScript]
+function InitSliders(){
+    // Alle Slider-Container selektieren
+    const sliderContainers = document.querySelectorAll('.sliderContainer');
+
+    sliderContainers.forEach(container => {
+        const sliderElement = container.querySelector('.slider');
+        const valueElement = container.querySelector('.sliderValue');
+
+        const min = parseFloat(container.dataset.min);
+        const max = parseFloat(container.dataset.max);
+        const step = parseFloat(container.dataset.step);
+        const var1 = container.dataset.var1;
+        const var2 = container.dataset.var2;
+        const isRange = container.dataset.range === "true"; // Überprüft, ob Bereichsmodus aktiv ist
+        //console.log("Data for slider: min: " + min + " max: " + max + " step: " + step + " var1: " + var1 + " var2: " + var2 + " isRange: " + isRange);
+
+        // Startwerte auslesen
+        let startValues = [];
+        if (isRange) {
+            // Bereichsmodus: Startwerte aus den <span>-Elementen lesen
+            const spanValues = valueElement.querySelectorAll('span');
+            startValues = Array.from(spanValues).map(span => parseFloat(span.textContent));
+            if (startValues.length !== 2) {
+                // Fallback: Standardwerte in der Mitte des Bereichs
+                startValues = [min + (max - min) / 3, max - (max - min) / 3];
+            }
+        } else {
+            // Einzelregler: Einzelwert auslesen
+            startValues = [parseFloat(valueElement.textContent) || (min + max) / 2];
+        }
+
+        // Slider erstellen
+        noUiSlider.create(sliderElement, {
+            start: startValues,
+            range: {
+                'min': min,
+                'max': max
+            },
+            step: step,
+            connect: isRange ? true : [true, false] // Verbindet die Regler bei Range-Modus
+        });
+
+        SetSliderValueFromCookie(container.id);
+
+        // Update-Event
+        sliderElement.noUiSlider.on('update', (values, handle) => {
+            if (isRange) {
+                // Bereichsmodus: Werte in <span>-Elementen aktualisieren
+                if(step >= 1){
+                    valueElement.textContent = values.map(value => Math.round(value)).join(' - ');
+                }else{
+                    valueElement.textContent = values.map(value => value).join(' - ');
+                }
+
+                //TODO: Beide Variablen aktualisieren
+                if(var1 !== undefined && var2 !== undefined){
+                    UpdateVariable(var1, values, 0);
+                    UpdateVariable(var2, values, 1);
+                }else{
+                    console.log("var1 or var2 is undefined. Slider will not change any variables");
+                }
+
+
+            } else {
+                // Einzelregler: Textinhalt aktualisieren
+                if(step >= 1){
+                    valueElement.textContent = Math.round(values[handle]);
+                }else{
+                    valueElement.textContent = values[handle];
+                }
+
+                if(var1 !== undefined){
+                    // Variable aktualisieren
+                    UpdateVariable(var1, values, handle);
+                }else{
+                    console.log("var1 is undefined. Slider will not change any variables");
+                }
+
+            }
+
+            // Cookie setzen
+            SetSliderCookie(container.id, values);
+        });
+    });
+
+    console.log("Sliders initialized");
+}
+\end{lstlisting}
+
+Die Funktion UpdateVariable() wandelt schließlich den String-Namen der Variable in eine Referenz um und ändert den Wert der Variable. Hierfür wird die eval()-Funktion verwendet, die den String als JavaScript-Code interpretiert.
+
+\begin{lstlisting}[style=JavaScript]
+function UpdateVariable(varName, values, handle){
+    //check if variable exists
+    if (eval('typeof ' + varName) === 'undefined') {
+        console.warn('Variable '+varName+' does not exist');
+        return;
+    }
+
+    //update variable
+    if(eval('typeof ' + varName) === 'number'){
+        eval(varName + ' = ' + parseFloat(values[handle]));
+    }else if(eval('typeof ' + varName) === 'string'){
+        eval(varName + ' = ' + values[handle]);
+    }
+}
+\end{lstlisting}
+
+Wie du vielleicht gesehen hast, gibt es auch noch die Funktionen SetSliderValueFromCookie() und SetSliderCookie(). Diese Funktionen dienen dazu, die Werte der Slider in Cookies zu speichern und beim Laden der Webseite wiederherzustellen. So behalten die Slider ihre eingestellten Werte auch nach einem Neuladen der Webseite.
 
 \subsection{Cookies}
+
+Cookies sind kleine Textdateien, die auf dem Computer des Benutzers gespeichert werden. Sie dienen dazu, Informationen über den Benutzer zu speichern, um die Benutzererfahrung zu verbessern. In meinem Fall möchte ich die Werte der Slider speichern, um sie beim Neuladen der Webseite wiederherzustellen.
+
+Jedoch ist das Speichern von Werten in Cookies nicht ganz trivial: Pro Cookie kann nur ein einziger String mit einer maximalen Länge von 4096 Bytes gespeichert werden. Da die Werte der Slider jedoch Arrays von Zahlen sind, müssen diese erst in einen String umgewandelt werden. Hierfür habe ich mich für die JSON.stringify()-Funktion entschieden, die ein JavaScript-Objekt in einen JSON-String umwandelt.
