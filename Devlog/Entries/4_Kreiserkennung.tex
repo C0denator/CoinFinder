@@ -1,5 +1,77 @@
 \section{Kreiserkennung}
 
 \subsection{Funktionsweise der HoughCircles-Methode}
+Das Implementieren der Kreiserkennung in openCV.js war tatsächlich ziemlich einfach. Alles was es grundsätzlich dafür braucht ist diese Methode:
+
+\begin{lstlisting}[style=JavaScript]
+cv.HoughCircles(image, circles, method, dp, minDist, param1, param2, minRadius, maxRadius);
+\end{lstlisting}
+
+Gehen wir erstmal die einzelnen Parameter durch:
+\begin{itemize}[label={}]
+    \item \textbf{image} - Dies ist das Bild, in dem die Kreise gefunden werden sollen. Es muss eine openCV-Matrix sein und sollte als Graustufenbild vorliegen.
+    \item \textbf{circles} - In diese Matrix werden die gefundenen Kreise gespeichert. Ja - die Methode schreibt die Kreise direkt in eine openCV-Matrix. In OpenCV können Matrizen nicht nur für die Speicherung von Bildern verwendet werden, sondern auch für die Speicherung von Vektoren. In diesem Fall wird in der Matrix \enquote{circles} in jeder Zeile ein Kreis gespeichert. Ein Kreis ist dabei ein Vektor der Form \([x, y, r]\), wobei \((x, y)\) die Koordinaten des Mittelpunkts des Kreises und \(r\) der Radius des Kreises sind.
+    
+    Weiter unten zeige ich eine Möglichkeit, wie die einzelnen Kreise in dieser Matrix in Objekte umgewandelt werden können. Dies macht die weitere Verarbeitung der Kreise deutlich einfacher.
+    \item \textbf{method} - Dies ist eine Konstante, die angibt, welche Methode zur Kreiserkennung verwendet werden soll. In openCV.js gibt es aktuell nur eine Methode, die verwendet werden kann, nämlich \texttt{cv.HOUGH\_GRADIENT}.
+    \item \textbf{dp} - Hier wird es leider etwas komplizierter. Der Parameter \texttt{dp} ist ein inverser Skalierungsfaktor, der die Genauigkeit der Kreiserkennung beeinflusst. Ein Wert von 1 bedeutet, dass die Auflösung des Eingabebildes verwendet wird. Ein Wert von 2 bedeutet, dass das Eingabebild halb so groß wie das Originalbild ist. Je kleiner der Wert, desto genauer ist die Kreiserkennung, aber auch desto langsamer. 
+    \item \textbf{minDist} - Dieser Parameter gibt den minimalen Abstand zwischen den Mittelpunkten der gefundenen Kreise an. Dies ist sehr nützlich um die Anzahl an falschen Positiven zu reduzieren. 
+    \item \textbf{param1} - Dieser Parameter ist spezifisch für die Methode \texttt{cv.HOUGH\_GRADIENT}. Es handelt sich hier um den oberen Schwellwert für die Kantenerkennung, welche intern durchgeführt wird. Der untere Schwellwert ist stets die Hälfte dieses Wertes.
+    \item \textbf{param2} - Dieser Parameter ist ebenfalls spezifisch für die Methode \texttt{cv.HOUGH\_GRADIENT}. Er ist der Schwellwert für die Kreiserkennung. Je kleiner der Wert, desto empfindlicher ist die Kreiserkennung, d.h. ein Kreis muss weniger stark ausgeprägt sein, um trotzdem als solcher erkannt zu werden. Dies bedeutet jedoch auch, dass das mit kleinerem Wert das Risiko für falsche Kreise steigt.
+\end{itemize}
+
+Der Einfachheit halber habe ich eine eigene Methode nur für das Finden von Kreisen geschrieben, die die Methode \texttt{cv.HoughCircles} verwendet. Diese Methode gibt dann ein Array von Kreis-Objekten zurück, die ich dann weiterverarbeiten kann. Die Methode sieht so aus:
+
+\begin{lstlisting}[style=JavaScript]
+function FindCircles(inputMat, guiMat){
+
+    //Eingabe-Matrix in Graustufen umwandeln
+    cv.cvtColor(inputMat, grayMat, cv.COLOR_RGBA2GRAY);
+
+    //reset circlesMat
+    circlesMat.delete();
+    circlesMat = new cv.Mat();
+
+    //Hough-Transformation
+    cv.HoughCircles(grayMat, circlesMat, cv.HOUGH_GRADIENT, dp, minRadius, param1, param2, minRadius, maxRadius);
+
+    //create circle objects
+    let foundCircles = [];
+    for (let i = 0; i < circlesMat.cols; ++i) {
+        let x = circlesMat.data32F[i * 3];
+        let y = circlesMat.data32F[i * 3 + 1];
+        let radius = circlesMat.data32F[i * 3 + 2];
+
+        foundCircles.push(new Circle(x, y, radius));
+    }
+
+    //draw circles
+    for(let i = 0; i < foundCircles.length; i++){
+        DrawCircle(foundCircles[i], guiMat, [255,255,255,255]);
+    }
+
+    return foundCircles;
+}
+\end{lstlisting}
+
+Auch für das Anzeigen der Kreise habe ich eine ausgelagerte Methode geschrieben. Dies wäre eigentlich nicht nötig gewesen, da für das Zeichnen von Kreisen nur eine einziger Methodenaufruf benötigt wird. Ich habe die Methode dennoch geschrieben, um die Lesbarkeit des Codes zu erhöhen. Die Methode sieht so aus:
+
+\begin{lstlisting}[style=JavaScript]
+function DrawCircle(circle, guiMat, color){
+    //return if parameter is not set
+    if(circle === undefined){
+        console.error("Circle is undefined");
+        return;
+    }
+
+    //draw circle
+    cv.circle(guiMat, new cv.Point(circle.x, circle.y), circle.radius, color, 2);
+}
+\end{lstlisting}
+
+Bei den Parametern \texttt{dp}, \texttt{param1} und \texttt{param2} stellte sich mir nun die Frage, welche Werte ich hier verwenden soll. Eine pauschale Antwort darauf gibt es nicht, da die optimalen Werte stark vom Bild, vom Verwendungszweck und in meinem Beispiel auch von der Kamera abhängen.
+
+Meine nächste Aufgabe war es nun, für meinen Anwendungsfall die optimalen Werte für diese Parameter zu finden. 
+
 \subsection{Die korrekten Parameter finden}
 \subsection{Buffering der Kreise}
