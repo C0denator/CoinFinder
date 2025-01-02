@@ -124,7 +124,6 @@ async function mainLoop() {
     console.log("Found circles: " + foundCircles.length);
 
     await matchAllCircles(foundCircles);
-
     console.log("after matchAllCircles");
     ShowTotalValue(foundCircles);
     DrawMemoryUsage(guiMat);

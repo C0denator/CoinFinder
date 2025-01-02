@@ -130,7 +130,6 @@ function SetSliderCookie(sliderId, value) {
 
 function SetSliderValueFromCookie(containerID){
     const sliderValues = GetSliderCookie();
-
     const sliderContainer = document.getElementById(containerID);
 
     if (!sliderContainer) {
@@ -154,10 +153,7 @@ function SetSliderValueFromCookie(containerID){
 
         // Anzeige des aktuellen Werts aktualisieren
         sliderValueElement.textContent = Array.isArray(savedValue) ? savedValue.join(' - ') : savedValue;
-        //console.log("Slider values set for " + containerID + " from cookie");
     }else{
         console.log("No saved value for " + containerID + " found in cookie");
     }
-
-
 }

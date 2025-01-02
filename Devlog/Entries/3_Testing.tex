@@ -131,4 +131,77 @@ Wie du vielleicht gesehen hast, gibt es auch noch die Funktionen SetSliderValueF
 
 Cookies sind kleine Textdateien, die auf dem Computer des Benutzers gespeichert werden. Sie dienen dazu, Informationen über den Benutzer zu speichern, um die Benutzererfahrung zu verbessern. In meinem Fall möchte ich die Werte der Slider speichern, um sie beim Neuladen der Webseite wiederherzustellen.
 
-Jedoch ist das Speichern von Werten in Cookies nicht ganz trivial: Pro Cookie kann nur ein einziger String mit einer maximalen Länge von 4096 Bytes gespeichert werden. Da die Werte der Slider jedoch Arrays von Zahlen sind, müssen diese erst in einen String umgewandelt werden. Hierfür habe ich mich für die JSON.stringify()-Funktion entschieden, die ein JavaScript-Objekt in einen JSON-String umwandelt.
+Jedoch ist das Speichern von Werten in Cookies nicht ganz trivial: Pro Cookie kann nur ein einziger String mit einer maximalen Länge von 4096 Bytes gespeichert werden. Da die Werte der Slider jedoch Arrays von Zahlen sind, müssen diese erst in einen String umgewandelt werden. Hierfür habe ich mich für die JSON.stringify()-Funktion entschieden, die ein JavaScript-Objekt in einen JSON-String umwandelt. Die Funktion zum schreiben des Cookies sieht dann wie folgt aus:
+
+\begin{lstlisting}[style=JavaScript]
+function SetSliderCookie(sliderId, value) {
+    // Holen des bestehenden Cookie-Werts
+    let sliderValues = GetSliderCookie();
+
+    // Setze den Wert des Sliders im Cookie
+    sliderValues[sliderId] = value;
+
+    // Setze den Cookie mit den neuen Werten
+    const expires = new Date();
+    expires.setDate(expires.getDate() + 7); // Cookie läuft in 7 Tagen ab
+    document.cookie = `sliderValues=${JSON.stringify(sliderValues)}; expires=${expires.toUTCString()}; path=/;`;
+}
+\end{lstlisting}
+
+Zunächst erstelle ich ein Objekt "sliderValues" aus dem Cookie, falls es bereits existiert. Anschließend füge ich den neuen Wert des Sliders hinzu und speichere das Objekt als JSON-String im Cookie. Hierfür muss zudem ein Ablaufdatum für den Cookie festgelegt werden, in meinem Fall läuft der Cookie nach 7 Tagen ab. Der Cookie sieht dann wie folgt aus:
+
+\begin{lstlisting}[style=JavaScript]
+{"slider1":["5100.00"],"slider2":["3900.00"],"slider3":["7.00"],"slider4":["3.00"],"sliderValue3":["230.00"],"sliderValue4":["129.00"]}
+\end{lstlisting}
+
+Um die Daten aus dem Cookie wiederherzustellen, muss in der Funktion GetSliderCookie() der Cookie ausgelesen und in ein JavaScript-Objekt umgewandelt werden. Eine saubere Lösung, welche selbst beim Vorhandensein von weiteren Cookies funktioniert, könnte wie folgt aussehen:
+
+\begin{lstlisting}[style=JavaScript]
+function GetSliderCookie(){
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; sliderValues=`);
+    if (parts.length === 2) {
+        const cookieValue = parts.pop().split(';').shift();
+        return JSON.parse(cookieValue);  // Parsen des JSON-Strings
+    }
+    return {};  // Falls der Cookie nicht existiert, ein leeres Objekt zurückgeben
+}
+\end{lstlisting}
+
+Lass mich diese Funktion kurz erklären: Zunächst wird der Cookie-Wert aus dem document.cookie-String extrahiert. Die \enquote{cookie} Eigenschaft des Objekts \enquote{document} enthält alle Cookies, die auf der aktuellen Seite gesetzt wurden. Dem String wird ein Semikolon und ein Leerzeichen vorangestellt, um sicherzustellen, dass der Cookie-Wert korrekt extrahiert wird, selbst wenn noch andere Cookies vorhanden sind. Nun wird über value.split('; sliderValues=') der String zweigeteilt, der erste Teil, welcher alles vor dem Cookie-Wert enthält, wird per pop() verworfen. Der zweite Teil, welcher den Cookie-Wert inklusive möglicher weiterer Cookies enthält, muss noch weiter verarbeitet werden. Hierfür wird der String per split(';') wieder in ein Array geteilt und mit shift() das erste Element, welches den Cookie-Wert enthält, extrahiert. Nun erst können wir sicher sein, dass mögliche Cookies vor und nach unserem Cookie-Wert entfernt wurden. Der Cookie-Wert wird schließlich per JSON.parse() in ein JavaScript-Objekt umgewandelt und zurückgegeben.
+
+Zu guter Letzt braucht es noch eine Funktion, welche beim Start der Webseite die Werte der Slider aus dem Cookie wiederherstellt. Diese Funktion sieht wie folgt aus:
+
+\begin{lstlisting}[style=JavaScript]
+function SetSliderValueFromCookie(containerID){
+    const sliderValues = GetSliderCookie();
+    const sliderContainer = document.getElementById(containerID);
+
+    if (!sliderContainer) {
+        console.error('Slider container not found');
+        return;
+    }
+
+    const slider = sliderContainer.querySelector('.slider');
+    const sliderValueElement = sliderContainer.querySelector('.sliderValue');
+
+    if (!slider || !sliderValueElement) {
+        console.error('Slider or value element not found');
+        return;
+    }
+
+    const savedValue = sliderValues[containerID];
+
+    if (savedValue !== undefined) {
+        // Den Slider auf den gespeicherten Wert setzen
+        slider.noUiSlider.set(savedValue);
+
+        // Anzeige des aktuellen Werts aktualisieren
+        sliderValueElement.textContent = Array.isArray(savedValue) ? savedValue.join(' - ') : savedValue;
+    }else{
+        console.log("No saved value for " + containerID + " found in cookie");
+    }
+}
+\end{lstlisting}
+
+Nun habe ich endlich eine solide Möglichkeit geschaffen, schnell und unkompliziert Variablen zur Laufzeit zu verändern und diese Änderungen sogar über einen Neustart der Webseite hinweg zu speichern. Dies wird mir hoffentlich eine Menge Zeit und Nerven sparen, wenn ich nun als nächstes mit der Implementierung der Kreiserkennung beginne.
