@@ -71,7 +71,18 @@ function DrawCircle(circle, guiMat, color){
 
 Bei den Parametern \texttt{dp}, \texttt{param1} und \texttt{param2} stellte sich mir nun die Frage, welche Werte ich hier verwenden soll. Eine pauschale Antwort darauf gibt es nicht, da die optimalen Werte stark vom Bild, vom Verwendungszweck und in meinem Beispiel auch von der Kamera abhängen.
 
-Meine nächste Aufgabe war es nun, für meinen Anwendungsfall die optimalen Werte für diese Parameter zu finden. 
+Meine nächste Aufgabe war es nun, für meinen Anwendungsfall die optimalen Werte für diese Parameter zu finden. Hierfür habe ich den Mainloop so angepasst, dass in einer Schleife die Kreiserkennung auf dem aktuellen Kamera-Frame durchgeführt wird. Die gefundenen Kreise werden dann auf eine separate "GUI-Matrix" gezeichnet, die dann auf dem Bildschirm angezeigt wird. Durch das Verändern der Parameter per Slider konnte ich so direkt die Auswirkungen auf die Kreiserkennung sehen.
 
-\subsection{Die korrekten Parameter finden}
+Letztendlich habe ich bei diesen Werten sehr gute Ergebnisse erzielt:
+\begin{itemize}
+    \item \texttt{dp} = 2
+    \item \texttt{minDist} = 18
+    \item \texttt{param1} = 230
+    \item \texttt{param2} = 129
+    \item \texttt{minRadius} = 18
+    \item \texttt{maxRadius} = 67
+\end{itemize}
+
+Dies bedeutet nicht, dass diese Werte auch für andere Anwendungsfälle optimal sind. Je nach Lichtverhältnissen, Kamerawinkel und Bildqualität können diese Werte stark variieren. Es ist also sehr wichtig, die Parameter für die Kreiserkennung an jeden Anwendungsfall individuell anzupassen.
+
 \subsection{Buffering der Kreise}
