@@ -53,8 +53,6 @@ function ShowMatrices(src, canvas) {
         let resizedMat = new cv.Mat();
         cv.resize(mat, resizedMat, targetSize, 0, 0, cv.INTER_AREA);
 
-        console.log("Matrix hat " + resizedMat.channels() + " Kanäle");
-
         // Matrix in RGBA umwandeln wenn es sich um eine Graustufenmatrix handelt
         if (resizedMat.channels() === 1) {
             let rgbaMat = new cv.Mat();
@@ -75,8 +73,6 @@ function ShowMatrices(src, canvas) {
 
         // Zeichne das temporäre Canvas auf das Haupt-Canvas
         ctx.drawImage(tempCanvas, 0, 0, resizedMat.cols, resizedMat.rows, x, y, cellWidth, cellHeight);
-
-        console.log("Matrix " + index + " gezeichnet");
 
         // Bereinige die temporären Matrizen
         resizedMat.delete();

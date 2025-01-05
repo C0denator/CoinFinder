@@ -8,7 +8,7 @@ class Settings{
 }
 
 let SettingsTemplate = new Settings(9400, 23300, 7, 7);
-let SettingsLive = new Settings(400, 600, 5, 1);
+let SettingsLive = new Settings(79, 56, 3, 1);
 
 let L2gradient = true;
 

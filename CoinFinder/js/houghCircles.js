@@ -1,8 +1,8 @@
 let dp = 2;
 let param1 = 230;
-let param2 = 129;
+let param2 = 149;
 let minRadius = 18;
-let maxRadius = 67;
+let maxRadius = 75;
 let grayMat;
 let circlesMat;
 
@@ -203,7 +203,7 @@ class Circle {
 
     IsInsideOf(otherCircle){
         let distance = Math.sqrt(Math.pow(this.x - otherCircle.x, 2) + Math.pow(this.y - otherCircle.y, 2));
-        let margin = 0.25 //how much of the radius can be outside of the other circle to be still inside
+        let margin = 0.4 //how much of the radius can be outside of the other circle to be still inside
         return otherCircle.radius * (1+margin) >= distance + this.radius;
     }
 

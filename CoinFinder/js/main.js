@@ -129,6 +129,10 @@ async function mainLoop() {
     DrawMemoryUsage(guiMat);
     ShowMatrix(guiMat, outputCanvas);
 
+    /*let circles = FindCircles(inputMat, guiMat);
+    FilterCircles(circles, guiMat);
+    ShowMatrix(guiMat, outputCanvas);*/
+
     if(loopActive){
         waitingForAnimationFrame = true;
         setTimeout(mainLoop, 1000 / 30);
@@ -140,6 +144,7 @@ async function mainLoop() {
 async function matchAllCircles(circles){
     for (const c of circles) {
         await MatchTemplates(ConvertC1ToC4(DetectEdges(c.GetImageData(inputMat), SettingsLive)), c);
+        ShowTotalValue(circles);
     }
     console.log("All circles matched");
 }
