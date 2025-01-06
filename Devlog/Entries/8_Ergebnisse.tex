@@ -1,9 +1,99 @@
 \section{Ergebnisse}
 
-\subsection{Erste Ergebnisse}
+\subsection{Neue MatchTemplate-Funktion}
+Meine finale MatchTemplate-Funktion sieht nun so aus:
 
-\subsection{Zuschneiden der Bilder}
+\begin{lstlisting}[style=JavaScript]
+async function MatchTemplates(src, circle){
+    //create result string
+    let matchType = cv.TM_CCOEFF_NORMED;
+    let iterations = 180;
+    let angleStep = 360 / iterations;
+    let allResults = [];
 
-\subsection{Weitere Anpassungen}
+    for(let i = 0; i < iterations; i++){
+        //pause so the browser can update the gui
+        await new Promise(r => setTimeout(r, 0));
+
+
+        let rotatedSrc = new cv.Mat();
+        if(i>0){
+            //rotate image
+            RotateMatrix(src, rotatedSrc, angleStep * i);
+        }else{
+            rotatedSrc = src.clone();
+        }
+
+        let templateSimilarity = [];
+        Object.entries(COINS).forEach(([key, value]) => {
+
+            //check if src and template have the same type
+            if(rotatedSrc.type() !== COINS[key].edges.type()){
+                console.error("Type of src and template are not the same");
+                console.error("src: " + GetMatrixType(rotatedSrc));
+                console.error("template(edges): " + GetMatrixType(COINS[key].edges));
+                return;
+            }
+
+            let templateResized = new cv.Mat();
+            cv.resize(COINS[key].edges, templateResized, rotatedSrc.size(), 0, 0, cv.INTER_AREA);
+
+            let resultMat = new cv.Mat();
+            cv.matchTemplate(rotatedSrc, templateResized, resultMat, matchType);
+
+            //get highest and lowest value
+            let minMax = cv.minMaxLoc(resultMat);
+            let max = minMax.maxVal;
+            let min = minMax.minVal;
+
+            templateSimilarity.push(new Result(key, min, max));
+
+            //console.log("Match value: " + max);
+
+            //free memory
+            templateResized.delete();
+            resultMat.delete();
+        });
+
+        //find lowest and highest value
+        let lowest = templateSimilarity.reduce((prev, current) => (prev.min < current.min) ? prev : current);
+        let highest = templateSimilarity.reduce((prev, current) => (prev.max > current.max) ? prev : current);
+        allResults.push(new Result("Iteration " + i, lowest, highest));
+
+        //draw loading bar
+        DrawLoadingBar(guiMat, (i+1) / iterations);
+        DrawMemoryUsage(guiMat);
+        //ShowMatrix(guiMat, outputCanvas);
+        ShowMatrices([guiMat, COINS[lowest.name].edges, src, rotatedSrc],outputCanvas);
+    }
+
+    console.log("Results for all iterations:");
+    console.dir(allResults);
+
+    //sort results from highest to lowest
+    if (matchType === cv.TM_SQDIFF ||
+        matchType === cv.TM_SQDIFF_NORMED) {
+        //find lowest value
+        allResults.sort((a, b) => a.min.min - b.min.min);
+        circle.matchValue = allResults[0].min.min;
+        circle.bestMatch = allResults[0].min.name;
+    }else{
+        //find highest value
+        allResults.sort((a, b) => b.max.max - a.max.max);
+        circle.matchValue = allResults[0].max.max;
+        circle.bestMatch = allResults[0].max.name;
+    }
+
+    console.log("Best match:");
+    console.dir(allResults[0]);
+
+    //set matchValue to 2 decimal places
+    circle.matchValue = Math.round(circle.matchValue * 100) / 100;
+
+    DrawCoinValue([circle], guiMat);
+
+    src.delete();
+}
+\end{lstlisting}
 
 \subsection{Finale Ergebnisse}

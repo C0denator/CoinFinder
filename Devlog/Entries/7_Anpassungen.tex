@@ -1,12 +1,192 @@
 \section{Anpassungen}
 
 \subsection{Kantenerkennung}
+Die Kantenerkennung ist ein häufig genutztes Verfahren in der Bildverarbeitung, um Objekte beziehunsweise geometrische Formen in Bildern zu erkennen. Sie ist häufig ein wichtiger Schritt für weitere Verarbeitungschritte. So möchte auch ich die Kantenerkennung nun nutzen, um für mein Template Matching bessere Ergebnisse zu erzielen
 
-\subsubsection{Funktionsweise der Canny-Methode}
+\subsubsection{Funktionsweise der Canny-Methode}.
+Um in openCV.js Kanten zu erkennen, muss der Canny-Algorithmus genutzt werden. Die Methode sieht wie folgt aus:
+\begin{lstlisting}[style=JavaScript]
+cv.Canny(src, dst, threshold1, threshold2, apertureSize, L2gradient);
+\end{lstlisting}
+
+\begin{itemize}
+    \item \textbf{src} - Die Eingabematrix, in der die Kanten erkannt werden sollen. Für gewöhnlich wird sie vorher in ein Graustufenbild umgewandelt.
+    \item \textbf{dst} - Die Ausgabematrix, in der die Kanten gespeichert werden.
+    \item \textbf{threshold1} - Der erste Schwellenwert für die Hysterese. Der Algorithmus nutzt zwei Schwellenwerte, um die Kanten zu erkennen. Der erste Schwellenwert ist der niedrigere Schwellenwert, der dazu genutzt wird, um Pixel als Kanten zu markieren, wenn sie stärker sind als der Schwellenwert.
+    \item \textbf{threshold2} - Der zweite Schwellenwert für die Hysterese. Der zweite Schwellenwert ist der höhere Schwellenwert, der dazu genutzt wird, um Pixel als Kanten zu markieren, wenn sie mit einem starken Pixel verbunden sind.
+    \item \textbf{apertureSize} - Die Größe des Sobel-Operators, der für die Kantenerkennung genutzt wird. Ein kleinerer Wert bedeutet eine genauere Kantenerkennung, aber auch mehr Rauschen.
+    \item \textbf{L2gradient} - Ein boolscher Wert, der angibt, ob die L2-Norm für die Gradienten berechnet werden soll. Wenn der Wert \textit{true} ist, wird die L2-Norm berechnet, ansonsten die L1-Norm. Die L2-Norm ist genauer, aber auch rechenaufwändiger.
+\end{itemize}
+
+Wie man sieht, arbeitet der Canny-Algorithmus mit zwei Parameter \textit{threshold1} und \textit{threshold2}, die die Schwellenwerte für die Hysterese darstellen. Für beide Parameter gilt: ein zu niedriger Wert führt zu einer hohen Anzahl an Kanten, ein zu hoher Wert zu einer geringen Anzahl an Kanten. Um die richtigen Werte zu finden, bedarf es also wieder viel "trial and error". Meine zuvor erstellten Slider werden sich hierbei als sehr nützlich erweisen.
 \subsubsection{Die korrekten Parameter finden}
+Während ich versuchte die korrekten Parameter zu ermittelten stellte sich relativ schnell harus, dass ich für die Vorlagen andere Parameter benötige als für das Kamerabild. Die Vorlagen sind sehr klar und zudem deutlich größer als die Münzen im Kamerabild. Daher benötigen sie auch andere Schwellenwerte. Um dieses Problem zu lösen, habe ich für beide Anwendungsfälle ein eigene "SettingsObjekt" erstellt, in dem die Parameter für die Kantenerkennung gespeichert werden. So kann ich für die Vorlagen und das Kamerabild unterschiedliche Parameter nutzen:
 
-\subsection{Matrizen rotieren und transformieren}
+\begin{lstlisting}[style=JavaScript]
+class Settings{
+    constructor(threshold1, threshold2, apertureSize, blurSize){
+        this.threshold1 = threshold1;
+        this.threshold2 = threshold2;
+        this.apertureSize = apertureSize;
+        this.blurSize = blurSize;
+    }
+}
+
+let SettingsTemplate = new Settings(9400, 23300, 7, 7);
+let SettingsLive = new Settings(79, 56, 3, 1);
+\end{lstlisting}
+
+Meine Methode für die Kantenerkennung sieht entsprechend wie folgt aus:
+
+\begin{lstlisting}[style=JavaScript]
+function DetectEdges(src, settings){
+    if(!CheckForCorrectMatType(src, [MatTypes.CV_8UC4, MatTypes.CV_8UC1])) return null;
+
+    //create output mat
+    let edgesMat = new cv.Mat();
+
+    //create gray mat
+    let grayMat = new cv.Mat();
+
+    if(src.type() === MatTypes.CV_8UC4){
+        cv.cvtColor(src, grayMat, cv.COLOR_RGBA2GRAY, 0);
+    }else if(src.type() === MatTypes.CV_8UC1) {
+        //clone the matrix
+        console.warn("src is already a gray matrix. Cloning it");
+        grayMat = src.clone();
+    }else{
+        console.error("Unsupported type of src-matrix: " + GetMatrixType(src));
+        return null;
+    }
+
+    if(settings === undefined){
+        console.warn("No settings provided. Using template settings");
+        settings = SettingsTemplate;
+    }
+
+    //clamp apertureSize to 3, 5 or 7
+    let allowedValues = [3, 5, 7];
+    settings.apertureSize = allowedValues.includes(settings.apertureSize)
+        ? settings.apertureSize
+        : allowedValues.reduce((closest, current) =>
+            Math.abs(current - settings.apertureSize) < Math.abs(closest - settings.apertureSize) ? current : closest
+        );
+
+    //gaussian blur
+    allowedValues = [1, 3, 5, 7];
+    settings.blurSize = allowedValues.includes(settings.blurSize)
+        ? settings.blurSize
+        : allowedValues.reduce((closest, current) =>
+            Math.abs(current - settings.blurSize) < Math.abs(closest - settings.blurSize) ? current : closest
+        );
+    cv.GaussianBlur(grayMat, grayMat, new cv.Size(settings.blurSize, settings.blurSize), 0, 0, cv.BORDER_DEFAULT);
+
+    //detect edges
+    cv.Canny(grayMat, edgesMat, settings.threshold1, settings.threshold2, settings.apertureSize, L2gradient);
+
+    //delete mats
+    grayMat.delete();
+
+    return edgesMat;
+}
+\end{lstlisting}
+
+Der Großteil der Funktion stellt lediglich sicher, dass alle Parameter einen gültigen Wert haben. So sind für \textit{apertureSize} und \textit{blurSize} nur die Werte 3, 5 und 7 bzw. 1, 3, 5 und 7 erlaubt. Sollte ein anderer Wert übergeben werden, wird der nächstgelegene verwendet. Vor der eigentlichen Kantenerkennung wird zudem eine Gaußsche Unschärfe auf das Graustufenbild angewendet. Dies kann mitunter helfen, das Rauschen zu reduzieren und die Kantenerkennung zu verbessern. Auch dieser Wert muss jedoch wie alle anderen feinfühlig per Slider eingestellt werden.
+
+Diese Methode wird nun sowohl für jede Vorlage als auch für das Kamerabild aufgerufen. Das Template Matching arbeitet somit nicht mehr mit den Originalbildern, sondern mit den Kantenbildern. Dies sollte die Ergebnisse deutlich verbessern.
+
+Wie dir vielleicht aufgefallen ist, habe ich in der Methode einen weiteren Check eingebaut, der überprüft, ob die übergebene Matrix ein gültiger Typ ist. Dies ist die Folge eines Problems, welches sich mir bei der Implemetierung des Template Matchings stellte. Dazu mehr im nächsten Abschnitt.
 
 \subsection{Neues Problem: Mat-Types}
+Wie mir ja bereits seit einiger Zeit bekannt ist, wird in openCV die Matrixklasse \textit{Mat} genutzt, um Bilder zu speichern und zu verarbeiten. Diese Klasse hat jedoch eine Eigenschaft, die mir bislang noch nicht aufgefallen ist: den \textit{type()}. So hat nämlich jede Matrix einen Typ, der angibt, wie die Matrix aufgebaut ist. Leider wird dieser Typ nur als Integer zurückgegeben, was zunächst nicht gerade hilfreich ist. Praktischerweise gibt es im Internt jedoch Listen, in denen die Integerwerte den Typen zugeordnet werden können. So habe ich mir eine solche Methode erstellt, die mir anhand des Integerwertes den Typ der Matrix zurückgibt:
+
+\begin{lstlisting}[style=JavaScript]
+function GetMatrixType(mat) {
+    const types = {
+        0: "CV_8UC1",  1: "CV_8SC1",  2: "CV_16UC1",  3: "CV_16SC1",
+        4: "CV_32SC1", 5: "CV_32FC1", 6: "CV_64FC1",
+        8: "CV_8UC2",  9: "CV_8SC2",  10: "CV_16UC2", 11: "CV_16SC2",
+        12: "CV_32SC2",13: "CV_32FC2",14: "CV_64FC2",
+        16: "CV_8UC3", 17: "CV_8SC3", 18: "CV_16UC3", 19: "CV_16SC3",
+        20: "CV_32SC3",21: "CV_32FC3",22: "CV_64FC3",
+        24: "CV_8UC4", 25: "CV_8SC4", 26: "CV_16UC4", 27: "CV_16SC4",
+        28: "CV_32SC4",29: "CV_32FC4",30: "CV_64FC4"
+    };
+    
+    return types[mat.type] || `Unknown type: ${mat.type}`;
+}
+\end{lstlisting}
+
+\subsection{Matrizen rotieren und transformieren}
+Für meine MatchTemplate-Methode habe ich die Anforderung eine openCV-Matrix um einen beliebigen Winkel zu rotieren. Leider gibt es in openCV.js keine Methode, die dies direkt ermöglicht. Daher habe ich mir eine eigene Methode erstellt, die eine Matrix um einen beliebigen Winkel rotiert:
+
+\begin{lstlisting}[style=JavaScript]
+function RotateMatrix(src, dist, angle){
+
+    let center = new cv.Point(src.cols / 2, src.rows / 2);
+    let interpolation = cv.INTER_LINEAR;
+    let borderMode = cv.BORDER_CONSTANT;
+    let borderValue = new cv.Scalar(0, 0, 0, 255);
+
+    //Rotationsmatrix erstellen
+    let rotationMatrix = cv.getRotationMatrix2D(center, angle, 1);
+
+    //Matrix rotieren
+    cv.warpAffine(src, dist, rotationMatrix, new cv.Size(src.cols, src.rows), interpolation, borderMode, borderValue);
+
+    //Matrix freigeben
+    rotationMatrix.delete();
+}
+\end{lstlisting}
+
+Für das Rotieren benutze ich die cv-eigene Methode cv.warpAffine. Sie benötigt folgende Parameter:
+
+\begin{itemize}
+    \item \textbf{src} - Die Eingabematrix, die rotiert werden soll.
+    \item \textbf{dist} - Die Ausgabematrix, in der das rotierte Bild gespeichert wird.
+    \item \textbf{angle} - Die Rotationsmatrix, die sowohl Grad als auch Mittelpunkt der Rotation enthält.
+    \item \textbf{dsize} - Die Größe der Ausgabematrix. In meinem Fall ist sie gleich groß wie die Eingabematrix.
+    \item \textbf{interpolation} - Die Interpolationsmethode, die genutzt werden soll. In meinem Fall nutze ich die LINEAR-Interpolation.
+    \item \textbf{borderMode} - Der Randmodus, der genutzt werden soll. Er entscheidet, wie die Pixel am Rand des Bildes behandelt werden. In meinem Fall nutze ich den CONSTANT-Modus, der die Pixel mit einer festen Farbe füllt.
+    \item \textbf{borderValue} - Die Farbe, mit der die Pixel am Rand gefüllt werden. In meinem Fall zeichne ich alle Pixel außerhalb des Bildes schwarz.
+\end{itemize}
 
 \subsection{Asynchronität und Ladebalken}
+Da ich nun jeden Kreis merhfach drehe und die Kantenerkennung für jedes Bild neu berechnen muss, dauert der Prozess des Template Matchings sehr lange. Der ursprüngliche Plan, die Methode in einer Schleife aufzurufen und das Ergebnis in Echtzeit anzuzeigen, ist somit nicht mehr möglich. Daher habe ich mich dazu entschieden, die Methode asynchron zu machen und einen Ladebalken einzufügen, der den Fortschritt anzeigt.
+
+Ein Ladebalken kann in OpenCV relativ leicht mittels einigen Rechtecken erstellt werden:
+
+\begin{lstlisting}[style=JavaScript]
+function DrawLoadingBar(dist, value){
+    //clamp value between 0 and 1
+    value = Math.min(1, Math.max(0, value));
+
+    let outerMargin = 10;
+    let outerHeight = 15;
+    let innerMargin = 4;
+    let startPosition = new cv.Point(outerMargin, dist.rows-outerMargin-outerHeight);
+    let endPosition = new cv.Point(dist.cols-outerMargin, dist.rows-outerMargin);
+
+    //draw outer frame
+    cv.rectangle(dist, startPosition, endPosition, [255, 255, 255, 255], -1);
+
+    //draw inner frame
+    let innerStartPosition = new cv.Point(startPosition.x + innerMargin, startPosition.y + innerMargin);
+    let innerEndPosition = new cv.Point(endPosition.x - innerMargin, endPosition.y - innerMargin);
+    cv.rectangle(dist, innerStartPosition, innerEndPosition, [0, 0, 0, 255], -1);
+
+    //draw progress bar
+    let progressEndPosition = new cv.Point(innerStartPosition.x + (innerEndPosition.x - innerStartPosition.x) * value, innerEndPosition.y);
+    cv.rectangle(dist, innerStartPosition, progressEndPosition, [0, 175, 0, 255], -1);
+}
+\end{lstlisting}
+
+Die Methode benötigt die Ausgabematrix, in der der Ladebalken gezeichnet werden soll, und den Wert, der den Fortschritt angibt. Der Wert muss zwischen 0 und 1 liegen. Der Ladebalken besteht aus einem weißen Rahmen, einem schwarzen Hintergrund und einem grünen Balken, der den Fortschritt anzeigt.
+
+Jedoch darf man nicht vergessen, dass JavaScript standardmäßig single-threaded ist. Das bedeutet, dass der Browser während der Berechnung des Template Matchings nicht mehr reagiert. Um dies zu verhindern, muss dem Interpreter die Möglichkeit gegeben werden, zwischendurch von der Aufgabe abzuspringen und andere Aufgaben, wie das Zeichnen des Ladebalkens und das Aktualisieren der UI zu erledigen. Dies kann mittels der \textit{setTimeout}-Methode erreicht werden. Wenn man jedoch nicht die Methode wieder von vorne ausführen möchte, sondern direkt in der nächste Programmzeile fortfahren möchte, muss man die Methode mit einem Promise verbinden:
+
+\begin{lstlisting}[style=JavaScript]
+await new Promise(r => setTimeout(r, 0));
+\end{lstlisting}
+
+Diese Zeile bewirkt, dass der Interpreter die Methode verlässt und erst nach Ablauf der Zeit, die in \textit{setTimeout} übergeben wird, wieder zurückkehrt. Da die Zeit auf 0 gesetzt ist, wird die Methode direkt im nächsten Frame fortgesetzt. Dies gibt dem Browser jedoch die Möglichkeit, andere Aufgaben zu erledigen.
