@@ -5,7 +5,6 @@ Meine finale MatchTemplate-Funktion sieht nun so aus:
 
 \begin{lstlisting}[style=JavaScript]
 async function MatchTemplates(src, circle){
-    //create result string
     let matchType = cv.TM_CCOEFF_NORMED;
     let iterations = 180;
     let angleStep = 360 / iterations;
@@ -96,4 +95,79 @@ async function MatchTemplates(src, circle){
 }
 \end{lstlisting}
 
+Lasst uns die Funktion im Detail betrachten:
+
+Zunächst wird die Anzahl der Iterationen für die Rotation festgelegt. In meinem Fall sind es 180, was bedeutet, dass das Bild um 2 Grad pro Iteration gedreht wird und somit insgesamt 180 Bilder erstellt und verglichen werden. Da dies einen hohen Rechenaufwand bedeutet, wird vor jeder Iteration mit \texttt{await new Promise(r => setTimeout(r, 0));} eine kurze Pause eingelegt, damit der Browser die GUI aktualisieren kann. Dafür muss die Funktion als \texttt{async} deklariert sein. Die Rotation erfolgt dann über meine vorher erstellte Funktion \texttt{RotateMatrix}, in welcher der Winkel für die Rotation übergeben wird. 
+
+Nachdem eine Matrix mit dem rotierten Bild erstellt wurde, wird diese mit allen Templates verglichen. Dafür wird über alle Templates iteriert und für jedes Template die Funktion \texttt{cv.matchTemplate} aufgerufen. Die Funktion gibt eine Matrix zurück, in der die Übereinstimmungswerte für das Template und das Bild enthalten sind. Diese Matrix wird dann nach dem höchsten und niedrigsten Wert durchsucht und in einem Array gespeichert.
+
+Für die speicherung der Ergebnisse wird ein Array \texttt{allResults} erstellt, welches Objekte der folgenden Klasse enthält:
+
+\begin{lstlisting}[style=JavaScript]
+class Result {
+    name;
+    min;
+    max;
+
+    constructor(name, min, max){
+        this.name = name;
+        this.min = min;
+        this.max = max;
+    }
+
+}
+\end{lstlisting}
+
+Die Eigenschaften \texttt{min} und \texttt{max} enthalten dabei das Template mit der niedrigsten und höchsten Übereinstimmung. Da manche Vergleichsmethoden den niedrigsten Wert als besten Wert zurückgeben und andere den höchsten, werden somit beide Werte gespeichert. Die Eigenschaft \texttt{name} enthält in der inneren Schleife den Namen des Templates, welches die Übereinstimmung erzielt hat. In der äußeren Schleife wird der Name der Iteration gespeichert.
+
+Innerhalb der inneren Schleife wird pro Vorlage ein Objekt dieser Klasse erstellt und in das Array \texttt{templateSimilarity} gespeichert. Dieses Array enthält somit für diesen Winkel alle Übereinstimmungswerte für alle Vorlagen. Nachdem alle Vorlagen für diesen einen Winkel verglichen wurden, wird das Array \texttt{templateSimilarity} nach dem Ergebnis mit dem niedrigsten und höchsten Wert sortiert und in Form eines neuen Ergebnis-Objektes in das Array \texttt{allResults} gespeichert. Danach iteriert die äußere Schleife weiter und das nächste Bild wird rotiert und verglichen.
+
+Zum Schluss enthält das Array \texttt{allResults} ein Objekt für jede Iteration / jeden Winkel, welches die besten und schlechtesten Übereinstimmungswerte enthält. Je nach Vergleichsmethode wird das Array \texttt{allResults} dann nach dem höchsten oder niedrigsten Wert sortiert und der passendste Wert in das Attribut \texttt{circle.matchValue} zusammen mit dem Namen der Vorlage in \texttt{circle.bestMatch} gespeichert.
+
+Nachdem die Vorlage mit der besten Übereinstimmung gefunden wurde, wird die GUI aktualisiert und das Ergebnis angezeigt. Um den Wert der Münze letztendlich anzuzeigen, wird die Funktion \texttt{DrawCoinValue} aufgerufen, welche den Wert der Münze direkt an die Position der Münze in der GUI einzeichnet. Die Funktion \texttt{DrawCoinValue} sieht wie folgt aus:
+
+\begin{lstlisting}[style=JavaScript]
+function DrawCoinValue(circles, dist){
+    if (circles === undefined || circles.length === 0) {
+        return;
+    }
+
+    for(let i = 0; i < circles.length; i++){
+        //does circle have "bestMatch" property?
+        if (circles[i].bestMatch === undefined) {
+            //print "?"
+            cv.putText(dist, "?", new cv.Point(circles[i].x, circles[i].y), cv.FONT_HERSHEY_SIMPLEX, 0.5, new cv.Scalar(255, 0, 255, 255), 1);
+        }else{
+            //print bestMatch
+            cv.putText(dist, circles[i].bestMatch, new cv.Point(circles[i].x-10, circles[i].y-6), cv.FONT_HERSHEY_SIMPLEX, 0.5, new cv.Scalar(255, 255, 255, 255), 1);
+            cv.putText(dist, circles[i].matchValue.toString(), new cv.Point(circles[i].x-10, circles[i].y+6), cv.FONT_HERSHEY_SIMPLEX, 0.5, new cv.Scalar(255, 255, 255, 255), 1);
+        }
+    }
+}
+\end{lstlisting}
+
 \subsection{Finale Ergebnisse}
+Nun kommt der Moment der Wahrheit. Wie gut funktioniert die Münzerkennung? Um dies zu überprüfen, habe ich eine kleine Testreihe durchgeführt, bei der ich für 3 verschiedene Einstellungen je 5 Bilder aufgenommen habe. Die Einstellungen waren:
+
+\begin{itemize}
+    \item \textbf{180 CCOEFF\_NORMED} - 180 Iterationen, Vergleichsmethode CCOEFF\_NORMED
+    \item \textbf{180 SQDIFF\_NORMED} - 180 Iterationen, Vergleichsmethode SQDIFF\_NORMED
+    \item \textbf{360 CCOEFF\_NORMED} - 360 Iterationen, Vergleichsmethode CCOEFF\_NORMED
+\end{itemize}
+
+Nachdem ich für jede Einstellung 5 verschiedene Bilder aufgenommen ung geprüft habe, bei denen alle 8 Münzen in zufälliger Rotation und Position auf einem Tisch lagen, bin ich zu folgendem Ergebnis gekommen:
+
+\begin{itemize}
+    \item \textbf{180 CCOEFF\_NORMED} - Durchschnittliche Erfolgsrate: 67,5\%
+    \item \textbf{180 SQDIFF\_NORMED} - Durchschnittliche Erfolgsrate: 60,0\%
+    \item \textbf{360 CCOEFF\_NORMED} - Durchschnittliche Erfolgsrate: 62,5\%
+\end{itemize}
+
+Die Erfolgsrate ist dabei definiert als die Anzahl der Durchläufe, bei denen die Münze korrekt klassifiziert wurde, geteilt durch die Gesamtanzahl der Durchläufe. Die Ergebnisse sind in Abbildung \ref{fig:SuccessRate} dargestellt.
+
+\begin{figure}[ht]
+    \centering
+    \caption{Erfolgsrate der Münzerkennung}
+    \label{fig:SuccessRate}
+    \includegraphics[width=\textwidth]{../SuccessRate.png}  
+\end{figure}
