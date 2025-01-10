@@ -4,5 +4,12 @@
 Die Möglichkeit von openCV.js, OpenCV-Funktionen direkt im Browser des Clients auszuführen, eröffnet eine Vielzahl von neuen Anwendungsmöglichkeiten. Rechenintensive Bildverarbeitungsalgorithmen müssen nun nicht mehr auf einem Server laufen, wodurch Kapazitäten frei werden und für andere Aufgaben genutzt werden können. Immer mehr Onlinebesuche finden auf mobilen Geräten statt - die Verwendung der eingebauten Kamera für Bildverarbeitungsaufgaben könnte somit in Zukunft eine wichtige Rolle spielen. 
 
 \subsection{Die größten Probleme}
+Es hat sich gezeigt, dass mit openCV sehr anspruchsvolle Probleme in der Bildverarbeitung gelöst werden können. Je nach Umfang und Komplexität des Problems kann die Implementierung jedoch sehr aufwendig sein. Die größten Probleme, die ich während der Implementierung hatte, waren die folgenden:
+
+\begin{itemize}
+    \item \textbf{Dokumentation} - Speziell für OpenCV.js ist die Dokumentation sehr spärlich. Die offizielle Dokumentation ist nur für C++ verfügbar und die JavaScript-Tutorials sind oft nicht ausreichend. Zudem erschwert die Emscripten-Übersetzung den Einstieg, da in der IDE keine Autovervollständigung für die OpenCV-Funktionen verfügbar ist. Es gibt keine leichte Möglichkeit, alle Funktionen und Parameter in Erfahrung zu bringen, was die Implementierung erschwert.
+    \item \textbf{Umgebungsbedingungen} - Viele Methoden der Bilderkennung haben sich als sehr empfindlich gegenüber den Umgebungsbedingungen herausgestellt. So haben beispielsweise die Lichtverhältnisse und die Kameraqualität einen großen Einfluss auf die Ergebnisse. Vor allem das Licht stellt ein nur schwer zu lösendes Problem dar, welches nur schwer "genormt" werden kann. 
+    \item \textbf{Parameter} - Die Parameter der OpenCV-Funktionen sind oft sehr spezifisch und müssen genau auf den Anwendungsfall abgestimmt werden. So kann es sein, dass eine Funktion bei falscher Einstellung gar nicht oder nur sehr schlechte Ergebnisse liefert. Das Finden der richtigen Parameter hat sich als sehr zeitaufwendig herausgestellt.
+\end{itemize}
 
 \subsection{Ausblick}
