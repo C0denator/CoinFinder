@@ -1,14 +1,17 @@
 \section{Erstellen der Webseite}
+Bevor wir mit der Implementierung irgendwelcher Bildverarbeitungsalgorithmen beginnen können, müssen wir zunächst eine Webseite mit den notwendigen Funktionalitäten erstellen.
 
 \subsection{openCV.js}
-Als aller erstes braucht es natürlich eine aktuelle Version von openCV.js. Diese kann direkt von der offiziellen openCV-Webseite herunterladen:
+Als aller erstes braucht es natürlich eine aktuelle Version von openCV.js. Diese kann direkt von der offiziellen openCV-Webseite heruntergeladen werden:
 
 \href{https://docs.opencv.org/4.10.0/opencv.js}{https://docs.opencv.org/4.10.0/opencv.js}
 
-Es handelt sich hierbei um eine mittels Emscripten kompilierte Version von OpenCV, welche in JavaScript ausgeführt werden kann. Da der Programmcode nur in Bytecode zur Verfügung steht, ist es nicht möglich, den Code direkt zu lesen oder zu verändern. Dies führt zu dem Problem, dass IDE-Funktionalitäten wie Autovervollständigung oder Syntax-Highlighting leider nicht verfügbar sind. 
+Es handelt sich hierbei um eine mittels Emscripten kompilierte Version von OpenCV, welche in JavaScript in Form einer WebAssembly ausgeführt werden kann. Das Einbinden erfolgt wie mit einer gewöhnlichen JavaScript-Datei. Da der Programmcode in Bytecode zur Verfügung steht, erfolgt die Ausführung deutlich schneller da die Kompilierung zur Laufzeit entfällt. Dies führt jedoch auch zu dem Problem, dass IDE-Funktionalitäten wie Autovervollständigung oder Syntax-Highlighting leider nicht verfügbar sind.
 
 \subsection{Grundaufbau der Webseite}
-Für unsere Webanwendung benötigen wir zunächst eine simple HTML-Struktur mit mindestens zwei Elementen: einem Video-Element für den Kamerastream und einem Canvas-Element, auf welchem wir die Bildverarbeitungsergebnisse anzeigen können. Beide Elemente sollten idealerweise übereinander liegen und die selbe Größe haben.
+Nun stellt sich die Frage: Welche Funktionen soll unsere Webseite haben? Zum einen brauchen wir natürlich Zugriff auf die Kamera des Nutzers, um den Videostream zu erhalten. Zum anderen benötigen wir eine Möglichkeit, das Ergebnis der Bildverarbeitung anzuzeigen.
+
+Mithilfe eines Video-Elementes können wir den Kamerastream von Webkameras anzeigen und auf diesen zugreifen. Für die Anzeige der Bildverarbeitungsergebnisse habe ich micht für ein Canvas-Element entschieden. Warum? - In OpenCV gibt es viele Möglichkeiten, Zeichenvorgänge auf Matrizen anzuwenden. Diese Matrizen können dann auf ein Canvas-Element gezeichnet werden (mehr dazu weiter unten). Mein Plan ist somit alle relevanten Ergebnisse direkt auf den zu verarbeitenden Frame zu zeichnen und diesen dann auf dem Canvas-Element anzuzeigen.
 
 Nach einigen Tests habe ich mich für folgende Struktur entschieden:
 \begin{lstlisting}[style=HTML]
@@ -36,7 +39,9 @@ Nach einigen Tests habe ich mich für folgende Struktur entschieden:
 </html>
 \end{lstlisting}
 
-Und die dazugehörige CSS-Datei:
+Damit haben wir ein Video-Element, welches den Kamerastream anzeigt und ein Canvas-Element, um die Bildverarbeitungsergebnisse anzuzeigen. In der nachfolgenden CSS-Datei sorge ich dafür, dass beide Elemente stets übereinander liegen und die gleiche Größe haben. So sieht der Nutzer immer das aktuelle Kamerabild und die Bildverarbeitungsergebnisse direkt darüber. Zusätzlich bekommt der Canvas die Eigenschaft "image-rendering: pixelated;", damit auch kleine Matrizen originalgetreu dargestellt werden.
+
+Die CSS-Datei sieht wie folgt aus:
 
 \begin{lstlisting}[style=CSS]
     *{
@@ -114,12 +119,10 @@ Und die dazugehörige CSS-Datei:
     
 \end{lstlisting}
 
-Nun haben wir ein Canvas-Element, welches über dem Video-Element liegt und exakt die selbe Größe hat. Dies ermöglicht es mir, die Bildverarbeitungsergebnisse direkt auf dem dem Canvas zu zeichnen und sie dem Nutzer anzuzeigen. Der Canvas hat zudem die Eigenschaft "image-rendering: pixelated" um auf kleinere Bilder scharf zu zeichnen.
-
 Als nächstes braucht es nun grundlegende Methoden, um auf die Kamera des Nutzers zuzugreifen und den Videostream auf dem Video-Element anzuzeigen.
 
 \subsection{Grundlegende openCV Methoden}
-Um auf die Kamera des Nutzers zuzugreifen, kann man unter anderem ein openCV-VideoCapture-Objekt verwenden. Dieses Objekt kann entweder direkt auf ein Video-Element zugreifen oder auf eine Videodatei. Da wir in unserem Fall den Kamerastream verwenden wollen, greifen wir direkt auf das Video-Element zu. Für den Zugriff auf die Webkamera benötigen wir die getUserMedia()-Methode des MediaDevices-Interfaces. Um sicherzustellen, dass openCV vollständig geladen ist, warten wir auf das "load"-Event des Fensters und initialisieren erst dann die Kamera:
+Um auf die Kamera des Nutzers zuzugreifen, kann man unter anderem ein openCV-VideoCapture-Objekt verwenden. Dieses Objekt kann entweder direkt auf ein Video-Element zugreifen oder auf eine Datei. Da wir in unserem Fall den Kamerastream verwenden wollen, greifen wir direkt auf das Video-Element zu. Für den Zugriff auf die Webkamera benötigen wir die getUserMedia()-Methode des MediaDevices-Interfaces. Um sicherzustellen, dass openCV vollständig geladen ist, warten wir zusätzlich auf das "load"-Event des Fensters und initialisieren erst dann die Kamera:
 
 \begin{lstlisting}[style=JavaScript]
     window.addEventListener("load", function () {
@@ -157,9 +160,18 @@ Um auf die Kamera des Nutzers zuzugreifen, kann man unter anderem ein openCV-Vid
 }
 \end{lstlisting}
 
-Nachdem die Kamera initialisiert ist, kann die read()-Methode des VideoCapture-Objekts verwendet werden, um den aktuellen Frame des Videostreams in eine openCV-Matrix zu konvertieren. 
+Nachdem die Kamera initialisiert ist, kann die read()-Methode des VideoCapture-Objekts verwendet werden, um den aktuellen Frame des Videostreams in eine openCV-Matrix zu konvertieren:
 
-Nun brauchen wir jedoch noch eine Methode, um eine openCV-Matrix auf einem Canvas ausgeben zu können. Dafür können wir die cv.imshow()-Methode verwenden, welche eine Matrix auf ein Canvas-Element zeichnet. In unserem Fall verwenden wir das outputCanvas-Element, welches über dem Video-Element liegt. Die Funktion sieht wie folgt aus:
+\begin{lstlisting}[style=JavaScript]
+let inputMat;
+let guiMat;
+
+videoCapture.read(inputMat);
+\end{lstlisting}
+
+Für die nachfolgenden Funktionen werde ich immer wieder die Variablen \texttt{inputMat} und \texttt{guiMat} verwenden. \texttt{inputMat} enthält den aktuellen Frame des Videostreams, während \texttt{guiMat} eine Kopie des Frames ist, auf welchem die Bildverarbeitungsergebnisse gezeichnet werden. 
+
+Nun brauchen wir jedoch noch eine Methode, um eine openCV-Matrix (in meinem Fall \texttt{guiMat}) auf einem Canvas ausgeben zu können. Dafür können wir einfach die cv.imshow()-Methode verwenden, welche eine Matrix auf ein Canvas-Element zeichnet. In unserem Fall verwenden wir das outputCanvas-Element, welches über dem Video-Element liegt. Die Funktion zum Anzeigen einer openCV-Matrix sieht wie folgt aus:
 
 \begin{lstlisting}[style=JavaScript]
 function ShowMatrix(src, canvas){
@@ -167,13 +179,12 @@ function ShowMatrix(src, canvas){
 }
 \end{lstlisting}
 
-Hinweis zur Speicherfreigabe: openCV.js verwaltet den Speicher nicht automatisch, wie es bei JavaScript üblich ist. Das bedeutet, dass wir selbst dafür verantwortlich sind, den Speicher freizugeben, sobald wir ihn nicht mehr benötigen. Dies betrifft hauptsächlich Objekte vom Typ cv.Mat, welche wir mit der delete()-Methode freigeben können. Tun wir dies nicht, verbraucht der Browser mit jedem neuen Aufruf von new cv.Mat() oder cv.imread() mehr Speicher, bis irgendwann der Browsertab abstürzt. Sollte dein Programm nach einigen Sekunden oder Minuten aufhören zu funktionieren, könnte dies ein Hinweis auf ein Speicherleck sein. Schaue in diesem Fall in die Konsole nach einer entsprechenden Fehlermeldung.
+Hinweis zur Speicherfreigabe: openCV.js verwaltet den Speicher nicht automatisch, wie es bei JavaScript üblich ist. Das bedeutet, dass wir selbst dafür verantwortlich sind, den Speicher freizugeben, sobald wir ihn nicht mehr benötigen. Dies betrifft hauptsächlich Objekte vom Typ cv.Mat und cv.MatVector, welche wir mit der delete()-Methode freigeben können. Tun wir dies nicht, verbraucht die Anwendung mit jedem neuen Aufruf von new cv.Mat() oder cv.imread() mehr Speicher, bis irgendwann der Browsertab abstürzt. Sollte dein Programm nach einigen Sekunden oder Minuten aufhören zu funktionieren, könnte dies ein Hinweis auf ein Speicherleck sein. Schaue in diesem Fall in die Konsole nach einer entsprechenden Fehlermeldung.
 
-Zu guter Letzt benötigen wir noch einen Hauptloop, welcher die Bilddaten aus dem Video-Element extrahiert, die Kreiserkennung durchführt und das Ergebnis auf dem Canvas-Element anzeigt. Dafür können wir die requestAnimationFrame()-Methode verwenden, welche uns eine optimale Bildwiederholrate garantiert. Ich habe zusätzlich einen Bool "loopActive" hinzugefügt, um den Loop bei Bedarf auch nur einmalig ausführen zu können. Der Loop sieht wie folgt aus:
+Zu guter Letzt benötigen wir noch eine Hauptschleife, bei der die Bilddaten aus dem Video-Element extrahiert, die zukünftigen Bildverarbeitungsalgorithmen ausgeführt und das Ergebnis auf dem Canvas-Element anzeigt werden. Dafür können wir entweder die \texttt{requestAnimationFrame()}-Methode verwenden, welche die Ausführung der Methode automtisch der Bildschirmwiederholrate anpasst, oder wir benutzen \texttt{setTimeout()} um selber die Zeit zwischen der wiederholten Ausführung festzulegen. Ich habe zusätzlich einen Bool "loopActive" hinzugefügt, um den Loop bei Bedarf auch nur einmalig ausführen zu können. Die Funktion sieht schließlich so aus:
 
 \begin{lstlisting}[style=JavaScript]
 let waitingForAnimationFrame = false;
-let angle = 0;
 function mainLoop() {
     if(!loadingFinished){
         console.warn("Can't start the loop because something is not loaded yet");
@@ -200,4 +211,4 @@ function mainLoop() {
 }
 \end{lstlisting}
 
-Nun sind wir bereit, mit der Kreiserkennung zu beginnen. Im nächsten Abschnitt werden wir uns die Circle Hough Transform genauer ansehen und sie auf unser Beispiel anwenden.
+Nun haben wir das Grundgerüst für unsere Webseite erstellt. Als nächstes können wir uns an die Implementierung der ersten Bildverarbeitungsalgorithmen wie der Kreiserkennung machen. Mehr dazu gibt es im nächsten Eintrag. Bis bald!
