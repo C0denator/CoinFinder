@@ -1,18 +1,21 @@
 \section{Eingriffe zur Laufzeit}
+Halt! Einfach drau los zu programmieren ist nicht immer die beste Idee. Aus Erfahrung weiß ich, dass insbesondere die Arbeit mit OpenCV in viel Trial and Error resultieren kann. 
+
+Bevor ich anfange die ersten Bildverarbeitungsalgorithmen zu implementieren, habe ich daher einige Vorkehrungen getroffen, um den Entwicklungsprozess zu beschleunigen und zu vereinfachen. In diesem Abschnitt möchte ich näher auf diese Vorkehrungen eingehen, und zudem verdeutlichen warum es bei der Arbeit mit OpenCV so wichtig ist, einfache Testing-Möglichkeiten zu haben.
 
 \subsection{Die Bedeutung von einfachem Testing}
 Meine nächste Aufgabe, die Implementierung der Kreiserkennung, erfordert eine Menge an Feintuning und Anpassungen. Jeder Parameter muss sorgfältig gewählt werden, um ein optimales Ergebnis zu erzielen. Zudem kann ich vorhinein nicht ermittelt werden, welche Parameter die besten sind. Es ist also ein iterativer Prozess, bei dem ich die Parameter anpasse, das Ergebnis betrachte und dann erneut die Parameter anpasse.
 
-Nun stelle man sich vor, man müsste für jede kleine Änderung die Webseite neu laden, die Kamera neu ausrichten und die Münzen neu platzieren. Um diesen Prozess deutlich zu beschleunigen, habe ich mich dazu entschieden, einige Eingriffe zur Laufzeit zu implementieren. Diese Eingriffe sollen es mir ermöglichen, die Parameter der Kreiserkennung und weiterer openCV Funktionen direkt zur Laufzeit zu verändern, ohne die Webseite neu laden zu müssen, und somit schnell die besten Parameter zu finden.
+Nun stelle man sich vor, man müsste für jede kleine Änderung die Webseite neu laden, die Kamera neu ausrichten und die Münzen neu platzieren. Dies ist der Grund, weshalb ich Eingriffe zur Laufzeit implementieren möchte. Diese Eingriffe sollen es mir ermöglichen, die Parameter der Kreiserkennung und weiterer openCV Funktionen direkt zur Laufzeit zu verändern, ohne die Webseite neu laden zu müssen, und somit schnell die besten Parameter zu finden.
 
 \subsection{Variablen-Slider}
-Meine Idee war es, für jede Variable im JavaScript-Code einen Slider zu erstellen zu können, mit dem ich schnell und einfach den Wert der Variable verändern kann. Dieser Slider soll dann den Wert der Variable anzeigen und bei Veränderung den Wert der Variable ändern.
+Meine Idee ist es, einen HTML-Slider erstellen zu können, mit dem ich schnell und einfach den Wert einer beliebigen JS-Variable verändern kann. Diese Slider sollen sowohl den aktuellen Wert der Variable anzeigen als auch bei Interaktion des Benutzers ihre zugewiesene Variable verändern. Der Wert des HTMl-Elementes soll somit direkt mit der Variable synchronisiert werden.
 
 Für die Slider habe ich die Bibliothek \href{https://refreshless.com/nouislider/}{noUISlider} verwendet.  Über die data-Attribute von den HTML-Elementen kann unkompliziert der Wertebereich und die Schrittweite des Sliders festgelegt werden.
 
-Nun muss aber standardmäßg ein Event-Listener für jeden Slider erstellt werden, der bei Veränderung den Wert einer Variable ändert. Da ich jedoch nicht für jede Variable einen eigenen Event-Listener erstellen möchte, habe ich mich für einen anderen Ansatz entschieden. Stattdessen soll man direkt im HTML-Element des Sliders angeben können, welche Variable durch diesen Slider verändert werden soll.
+Nun müsste aber standardmäßg ein Event-Listener für jeden Slider erstellt werden, der bei Veränderung den Wert einer Variable ändert. Da ich jedoch nicht für jede Variable einen eigenen Event-Listener erstellen möchte, habe ich mich für einen anderen Ansatz entschieden. Stattdessen soll man direkt im HTML-Element des Sliders angeben können, welche Variable durch diesen Slider verändert werden soll.
 
-Hierfür benötigen wir zum Ersten ein eigenes data-Attribute von HTML, in welchem der Name der zu verändernen Varaible angegeben wird. Zum Zweiten benötigen wir eine Funktion, die alle Slider-Elemente durchgeht und für jedes Element den Event-Listener erstellt. Anschließend braucht es noch eine Möglichkeit den String-Namen der Variable in eine Referenz auf die Variable umzuwandeln.
+Hierfür benötigen wir zunächst ein eigenes data-Attribute , in welchem der Name der zu verändernen Varaible angegeben wird. Zum Zweiten benötigen wir eine Funktion, die alle Slider-Elemente durchgeht und für jedes Element mithilde des data-Attributs den Event-Listener für die angegebene Variable erstellt. Hierfür braucht es eine Möglichkeit den String-Namen der Variable in eine Referenz auf die Variable umzuwandeln. Dies kann mithilfe der \texttt{eval()}-Funktion erreicht werden.
 
 Die Event-Listener Funktion sieht dann wie folgt aus:
 
@@ -129,7 +132,7 @@ Wie du vielleicht gesehen hast, gibt es auch noch die Funktionen SetSliderValueF
 
 \subsection{Cookies}
 
-Cookies sind kleine Textdateien, die auf dem Computer des Benutzers gespeichert werden. Sie dienen dazu, Informationen über den Benutzer zu speichern, um die Benutzererfahrung zu verbessern. In meinem Fall möchte ich die Werte der Slider speichern, um sie beim Neuladen der Webseite wiederherzustellen.
+Cookies sind kleine Textdateien, die auf dem Computer des Benutzers gespeichert werden. Wie du sicherlich bereits weißt, dienen sie unter anderem dem Zweck, Informationen Session-übergreifend zu speichern. In meinem Fall möchte ich die Werte der Slider speichern, um sie beim Neuladen der Webseite wiederherzustellen.
 
 Jedoch ist das Speichern von Werten in Cookies nicht ganz trivial: Pro Cookie kann nur ein einziger String mit einer maximalen Länge von 4096 Bytes gespeichert werden. Da die Werte der Slider jedoch Arrays von Zahlen sind, müssen diese erst in einen String umgewandelt werden. Hierfür habe ich mich für die JSON.stringify()-Funktion entschieden, die ein JavaScript-Objekt in einen JSON-String umwandelt. Die Funktion zum schreiben des Cookies sieht dann wie folgt aus:
 
@@ -168,7 +171,7 @@ function GetSliderCookie(){
 }
 \end{lstlisting}
 
-Lass mich diese Funktion kurz erklären: Zunächst wird der Cookie-Wert aus dem document.cookie-String extrahiert. Die \enquote{cookie} Eigenschaft des Objekts \enquote{document} enthält alle Cookies, die auf der aktuellen Seite gesetzt wurden. Dem String wird ein Semikolon und ein Leerzeichen vorangestellt, um sicherzustellen, dass der Cookie-Wert korrekt extrahiert wird, selbst wenn noch andere Cookies vorhanden sind. Nun wird über value.split('; sliderValues=') der String zweigeteilt, der erste Teil, welcher alles vor dem Cookie-Wert enthält, wird per pop() verworfen. Der zweite Teil, welcher den Cookie-Wert inklusive möglicher weiterer Cookies enthält, muss noch weiter verarbeitet werden. Hierfür wird der String per split(';') wieder in ein Array geteilt und mit shift() das erste Element, welches den Cookie-Wert enthält, extrahiert. Nun erst können wir sicher sein, dass mögliche Cookies vor und nach unserem Cookie-Wert entfernt wurden. Der Cookie-Wert wird schließlich per JSON.parse() in ein JavaScript-Objekt umgewandelt und zurückgegeben.
+Lass mich diese Funktion kurz erklären: Zunächst wird der Cookie-Wert aus dem document.cookie-String extrahiert. Die \enquote{cookie} Eigenschaft des Objekts \enquote{document} enthält alle Cookies, die auf der aktuellen Seite gesetzt wurden. Dem String wird ein Semikolon und ein Leerzeichen vorangestellt, um sicherzustellen, dass der Cookie-Wert korrekt extrahiert wird, selbst wenn noch andere Cookies vorhanden sind. Nun wird über value.split('; sliderValues=') der String zweigeteilt. Der erste Teil, welcher alles vor dem Cookie-Wert enthält, wird per pop() verworfen. Der zweite Teil, welcher den Cookie-Wert inklusive möglicher weiterer Cookies enthält, muss noch weiter verarbeitet werden. Hierfür wird der String per split(';') wieder in ein Array geteilt und mit shift() das erste Element, welches den Cookie-Wert enthält, extrahiert. Nun erst können wir sicher sein, dass mögliche weitere Cookies vor und nach unserem Cookie-Wert entfernt wurden. Der Slider-Cookie-Wert wird schließlich per JSON.parse() in ein JavaScript-Objekt umgewandelt und zurückgegeben.
 
 Zu guter Letzt braucht es noch eine Funktion, welche beim Start der Webseite die Werte der Slider aus dem Cookie wiederherstellt. Diese Funktion sieht wie folgt aus:
 
@@ -204,4 +207,4 @@ function SetSliderValueFromCookie(containerID){
 }
 \end{lstlisting}
 
-Nun habe ich endlich eine solide Möglichkeit geschaffen, schnell und unkompliziert Variablen zur Laufzeit zu verändern und diese Änderungen sogar über einen Neustart der Webseite hinweg zu speichern. Dies wird mir hoffentlich eine Menge Zeit und Nerven sparen, wenn ich nun als nächstes mit der Implementierung der Kreiserkennung beginne.
+Nun habe ich endlich eine solide Möglichkeit geschaffen, schnell und unkompliziert Variablen zur Laufzeit zu verändern und diese Änderungen sogar über einen Neustart der Webseite hinweg zu speichern. Dies wird mir hoffentlich eine Menge Zeit und Nerven sparen, wenn ich nun im nächsten Blogeintrag mit der Implementierung der Kreiserkennung beginne.
