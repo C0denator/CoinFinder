@@ -2,13 +2,13 @@
 Die Kreiserkennung ist fertig! Und es war tatsächlich einfacher als gedacht. Die größte Herausforderung ist es gewesen, die optimalen Parameter für die Kreiserkennung zu finden. Aber mit meinen neuen Slidern war das auch kein Problem. Mehr dazu weiter unten.
 
 \subsection{Funktionsweise der HoughCircles-Methode}
-Um Kreie in einem Bild zu erkennen, gibt es in OpenCV.js praktischerweise bereits eine fertige Methode, die dies für uns übernimmt. Diese Methode heißt \texttt{cv.HoughCircles} und verwendet die Hough-Transformation, um Kreise in einem Bild zu finden. Die Methode hat folgende Signatur:
+Um Kreise in einem Bild zu erkennen, gibt es in OpenCV.js praktischerweise bereits eine fertige Methode, die dies für uns übernimmt. Diese Methode heißt \texttt{cv.HoughCircles} und verwendet die Hough-Transformation, um Kreise in einem Bild zu finden. Die Methode hat folgende Signatur:
 
 \begin{lstlisting}[style=JavaScript]
 cv.HoughCircles(image, circles, method, dp, minDist, param1, param2, minRadius, maxRadius);
 \end{lstlisting}
 
-Gehen wir erstmal die einzelnen Parameter durch:
+Gehen wir fürs Erste die einzelnen Parameter durch:
 \begin{itemize}[label={}]
     \item \textbf{image} - Dies ist das Bild, in dem die Kreise gefunden werden sollen. Es muss eine openCV-Matrix sein und sollte als Graustufenbild vorliegen.
     \item \textbf{circles} - In diese Matrix werden die gefundenen Kreise gespeichert. Ja - die Methode schreibt die Kreise direkt in eine openCV-Matrix. In OpenCV können Matrizen nicht nur für die Speicherung von Bildern verwendet werden, sondern auch für die Speicherung von Vektoren. In diesem Fall wird in der Matrix \enquote{circles} in jeder Zeile ein Kreis gespeichert. Ein Kreis ist dabei ein Vektor der Form \([x, y, r]\), wobei \((x, y)\) die Koordinaten des Mittelpunkts des Kreises und \(r\) der Radius des Kreises sind.

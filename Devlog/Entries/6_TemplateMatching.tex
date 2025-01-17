@@ -1,14 +1,21 @@
 \section{Template Matching}
+Also gut, ich habe also die Kreiserkennung implementiert. Jetzt möchte ich die Münzen klassifizieren. Doch wie mache ich das? 
 
 \subsection{Überlegungen}
-Jetzt wo ich die Kreiserkennung implementiert habe, ist es mir möglich Münzen im Bild zu erkennen. Der nächste Schritt wäre es nun, die Münzen zu klassifizieren und zu unterscheiden. Doch wie klassifiziert man in openCV Bilder? Eine Möglichkeit ist das Template Matching. Dabei wird ein Template, also eine Vorlage, über ein Bild geschoben und die Ähnlichkeit an jedem Punkt beziehungsweise Pixel berechnet. Das Ergebnis ist eine Heatmap, die die Übereinstimmung an jedem Punkt im Bild anzeigt.
+Um zur Laufzeit Münzen klassifizieren zu können, muss ich dem Programm vorher beibringen, wie diese Münzen aussehen. Dafür könnte ich für jede Münze ein einzelnes Bild abspeichern, welches dann als Vorlage für die Klassifizierung dienen könnte.
+
+Doch wie kann man in openCV.js Bilder miteinander vergleichen und auf Ähnlichkeit prüfen? Dafür gibt es viele Mittel. Man könnte beispielsweise Histogramme für beide Bilder erstellen, und diese dann mit vorgefertigten Vergleichsalgorithmen wie der Bhattacharyya-Distanz untersuchen. Jedoch geben Histogramme nur Auskunft über die Wahrscheinlichkeitsverteilung der Farbwerte. Wichtige Informationen wie die Ziffer der Münze hätten wahrscheinlich im Histogramm keinen großen Einfluss. Es wäre dann sehr schwierig, beispielsweise den Unterschied zwischen einer 1-Cent-Münze und einer 2-Cent-Münze zu erkennen, da sich die Farben der Münzen und somit auch die Histogramme nur minimal unterscheiden würden.
+
+Eine andere Möglichkeit ist das Template Matching. Dabei wird ein Template, also eine Vorlage, über ein Bild geschoben und die Ähnlichkeit an jedem Punkt beziehungsweise Pixel berechnet. Das Ergebnis ist eine Heatmap, die die Übereinstimmung an jedem Punkt im Bild anzeigt.
+
+Nun möchte ich jedoch nicht eine Heatmap, die mir die Übereinstimmung für jeden Pixel anzeigt, sondern ein generelles Maß für die Ähnlichkeit des Templates zum Bild. Wenn ich vor dem Vergleich dafür sorge, dass Template und Ausgangsbild die selbe Größe haben, sollte pro Vergleich lediglich ein Wert herauskommen, der die Ähnlichkeit des Templates zum gesamten Bild beschreibt. Diesen Wert könnte ich dann dafür nutzen, um die Vorlage mit der höchsten Übereinstimmung zu finden und somit die Münze zu klassifizieren.
 
 \subsection{Die Vorlagen}
-Damit ich die Münzen anhand ihrer Bildinformastionen klassifizieren kann, benötige ich zuerst Vorlagen, mit denen ich die Münzen vergleichen kann. Ich habe also Bilder von den Münzen gemacht und diese als Vorlagen gespeichert. Diese Vorlagenbilder sind die Referenzbilder, anhand derer ich die Münzen im Kamerabild auf Ähnlichkeit überprüfen möchte.
+Damit ich die Münzen anhand ihrer Bildinformationen klassifizieren kann, benötige ich also Vorlagen, mit denen ich die Münzen vergleichen kann. Ich habe demnach Bilder von den Münzen gemacht und für jede Münze ein Bild abgespeichert. Diese Vorlagenbilder sind die Referenzbilder, anhand derer ich die Münzen im Kamerabild auf Ähnlichkeit überprüfen möchte.
 
-Hier hat sich vorallem die spiegelnde Oberfläche der Münzen als Problem herausgestellt. Ich musste viel mit dem Lichteinfallswinkel und der Beleuchtung spielen, um von jeder Münze ein gutes Bild zu bekommen. Auch der Abnutzungsgrad hat das Erstellen der Vorlagen erschwert. So musste ich vorallem bei den 50-20-10 Cent Münzen und bei den 5-2-1 Cent Münzen darauf achten, dass die Münzen stets eine ähnliche Optik ausweisen. Andernfalls könnte es passieren, dass die Spiegelung oder die Abnutzung als Unterschied interpretiert wird und nicht mehr die Ziffern auf den Münzen.
+Hier hat sich besonders die spiegelnde Oberfläche der Münzen als Problem herausgestellt. Ich musste viel mit dem Lichteinfallswinkel und der Beleuchtung spielen, um von jeder Münze ein gutes Bild zu bekommen. Auch der Abnutzungsgrad hat das Erstellen der Vorlagen erschwert. So musste ich insbesondere bei den 50-20-10 Cent Münzen und bei den 5-2-1 Cent Münzen darauf achten, dass die Münzen stets eine ähnliche Optik ausweisen. Andernfalls könnte es passieren, dass die Spiegelung oder die Abnutzung als Unterschied interpretiert wird und nicht mehr die Ziffern auf den Münzen.
 
-Meine Vorlagen sehen wie folgt aus:
+Bei jeder Vorlage nimmt die Münze das gesamte Bild ein. Sie sehen so aus:
 
 \begin{figure}[ht]
     \centering
@@ -113,12 +120,12 @@ function InitTemplates() {
 
 Das Event \textit{templatesLoaded} wird ausgelöst, sobald alle Vorlagen geladen wurden. Somit kann ich sicherstellen, dass Programmschritt welche die Vorlagen benötigen erst ausgeführt werden, wenn die Vorlagen auch wirklich geladen wurden.
 \subsection{Funktionsweise}
-Template Matching funktioniert in openCV.js mit der folgenden Funktion:
+Für das eigentliche Template-Matching benutzte ich in openCV.js die folgende Funktion:
 \begin{lstlisting}[style=JavaScript]
 cv.matchTemplate(image, templ, result, method, mask);
 \end{lstlisting}
 
-Lasst uns die Parameter genauer betrachten:
+Wie bereits erwähnt, berechnet diese Funktion die Übereinstimmung eines Templates mit einem Bild. Dabei wird das Template über das Bild geschoben und an jedem Punkt die Übereinstimmung berechnet. Zurück gegeben wird eine Heatmap, die die Übereinstimmung an jedem Punkt im Bild anzeigt. Glücklicherweise benötigen die Parameter nicht so viel Trial-and-Error wie bei der Kreiserkennung. Die Parameter sind wie folgt:
 \begin{itemize}
     \item \textbf{image} - Das Bild, in dem das Template gesucht werden soll. Es muss als openCV-Matrix vorliegen.
     \item \textbf{templ} - Das Template, das gesucht werden soll. Es muss auch als openCV-Matrix vorliegen.
@@ -130,8 +137,10 @@ Lasst uns die Parameter genauer betrachten:
     \subitem \textbf{cv.TM\_CCORR\_NORMED} - Normalisierte Kreuzkorrelation (größere Werte bedeuten bessere Übereinstimmung)
     \subitem \textbf{cv.TM\_CCOEFF} - Kreuzkorrelationskoeffizient (größere Werte bedeuten bessere Übereinstimmung)
     \subitem \textbf{cv.TM\_CCOEFF\_NORMED} - Normalisierter Kreuzkorrelationskoeffizient (größere Werte bedeuten bessere Übereinstimmung)
-    \item \textbf{mask} - (optional) Eine Maske, die angibt, welche Bereiche des Bildes berücksichtigt werden sollen. In meinem Fall benutze ich keine Maske, da ich bereits vor Aufruf der Funktion unwerwünschte Bereiche des Bildes ausschneide.
+    \item \textbf{mask} - (optional) Eine Maske, die angibt, welche Bereiche des Bildes berücksichtigt werden sollen. In meinem Fall benutze ich keine Maske, da ich bereits vor Aufruf der Funktion unerwünschte Bereiche des Bildes ausschneide.
 \end{itemize}
+
+Der einzige Parameter welcher etwas Ausprobieren erfordert hat, war die Methode. Als erstes scheint es, als würden die Methoden \textit{cv.TM\_SQDIFF\_NORMED} und \textit{cv.TM\_CCOEFF\_NORMED} die besten Ergebnisse erzielen. 
 
 Meine Funktion für das Template Matching sieht nun so aus:
 \begin{lstlisting}[style=JavaScript]
@@ -172,10 +181,52 @@ function MatchTemplates(src, circle){
 }
 \end{lstlisting}
 
-Innerhalb des main-loops wird diese Funktion nun für jeden gefundenen Kreis ausfgerufen. Der Parameter "src" ist dabei eine ausgeschnittene Region des Bildes, in der sich der Kreis befindet. Der Parameter "circle" ist das Circle-Objekt, in dem die Informationen zum Kreis gespeichert sind. Die Funktion iteriert anschließend über alle Vorlagen und berechnet die Übereinstimmung für jede Vorlage. Hierbei muss beachtet werden, dass Vorlage und das zu prüfende Bild vorher auf die selbe Größe gebracht werden müssen. Die Ergebnisse werden in einem Array gespeichert und anschließend sortiert. Das beste Ergebnis wird dann im Circle-Objekt gespeichert.
+Innerhalb des main-loops wird diese Funktion nun für jeden gefundenen Kreis aufgerufen. Der Parameter "src" ist dabei eine ausgeschnittene Region des Bildes, in der sich der Kreis befindet. Der Parameter "circle" ist das Circle-Objekt, in dem die Informationen zum Kreis gespeichert sind. Die Funktion iteriert anschließend über alle Vorlagen und berechnet die Übereinstimmung für jede Vorlage. Hierbei muss beachtet werden, dass Vorlage und das zu prüfende Bild vorher auf die selbe Größe gebracht werden müssen. Die Ergebnisse werden in einem Array gespeichert und anschließend sortiert. Das beste Ergebnis wird dann im Circle-Objekt gespeichert.
+
+Du fragst dich bestimmt wie ich an die ausgeschnittene Matrix eines jeden Kreises komme. Dafür habe ich in der \texttt{Circle}-Klasse eine eigene Methode geschrieben, die die ausgeschnittene Region des Bildes zurückgibt. Diese Methode sieht so aus:
+
+\begin{lstlisting}[style=JavaScript]
+GetImageData(src){
+    let clippedImage = src.roi(new cv.Rect(this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2));
+
+    return ClipCorners(clippedImage);
+}
+\end{lstlisting}
+
+Dabei benutze ich die Methode \texttt{roi()}, welche es mir ermöglicht, für jede Matrix eine Region of Interest (ROI) zu definieren. Diese ROI wird dann als neue Matrix zurückgegeben. Mithilfe der XY-Koordinaten und des Radius des Kreises kann ich so in einer Matrix eine kleinere Teilmatrix erstellen, die nur den Kreis enthält. Diese Teilmatrix wird dann an die \texttt{ClipCorners()}-Funktion übergeben, welche die Ecken der Matrix abschneidet, damit das endgültige Bild nur Pixel enthält, die auch wirklich zum Kreis beziehungsweise der Münze gehören. Die Funktion \texttt{ClipCorners()} funktioniert wie folgt:
+
+\begin{lstlisting}[style=JavaScript]
+function ClipCorners(src){
+    let radius = src.cols/2;
+    let center = new cv.Point(src.cols/2, src.rows/2);
+
+    let mask = cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC1);
+    cv.circle(mask, center, radius, [255, 255, 255, 255], -1);
+
+    let maskedImage = new cv.Mat();
+    let channels = new cv.MatVector();
+    cv.split(src, channels);
+
+    //apply mask to each channel
+    for(let i = 0; i < channels.size(); i++){
+        cv.bitwise_and(channels.get(i), mask, channels.get(i));
+    }
+
+    //merge channels to one image
+    cv.merge(channels, maskedImage);
+
+    //delete mats
+    mask.delete();
+    channels.delete();
+
+    return maskedImage;
+}
+\end{lstlisting}
+
+Diese Funktion erstellt eine Maske, die nur die Pixel enthält, die zum Kreis gehören. Um die Maske anwenden zu können, muss die Matrix in ihre einzelnen Kanäle aufgeteilt werden. Anschließend wird die Maske auf jeden Kanal angewendet, bevor die Kanäle wieder zu einem Bild zusammengefügt werden. Das Ergebnis ist ein Bild, welches nur die Pixel enthält, die zum Kreis gehören. Dieses Bild wird dann zurückgegeben.
 
 \subsection{Exkurs: Mehrere Matrizen in einem Canvas anzeigen}
-Bei wachsender Komplexität der Webanwendung ob ich mir immer wieder gewünscht eine Möglichkeit zu haben, mehrere Matrizen in einem Canvas anzuzeigen. Dies ist standardmäßig in openCV.js nicht vorgesehen, da die Funktion \textit{cv.imshow()} immer nur eine Matrix anzeigen kann. Also habe ich mir eine eigene Funktion geschrieben, die mehrere Matrizen in einem Canvas anzeigen kann. Diese Funktion sieht so aus:
+Bei wachsender Komplexität der Webanwendung ob ich mir immer wieder gewünscht eine Möglichkeit zu haben, mehrere Matrizen in einem Canvas anzuzeigen. Dies ist standardmäßig in openCV.js nicht vorgesehen, da die Funktion \texttt{cv.imshow()} immer nur eine Matrix anzeigen kann. Also habe ich mir eine eigene Funktion geschrieben, die mehrere Matrizen in einem Canvas anzeigen kann. Diese Funktion sieht so aus:
 
 \begin{lstlisting}[style=JavaScript]
 function ShowMatrices(src, canvas) {
@@ -246,12 +297,14 @@ function ShowMatrices(src, canvas) {
 }
 \end{lstlisting}
 
-Um mehrere Bilder in einen Canvas zu zeichnen, musste ich die Größe der Bilder anpassen, damit sie in ein Grid passen. Dafür habe ich die Funktion \textit{cv.resize()} verwendet. Anschließend müssen die Matrizen zuerst in ein temporäres Canvas gezeichnet werden, bevor sie in das Haupt-Canvas gezeichnet werden können. Die Funktion \textit{drawImage()} von Canvas kann nur Bilder zeichnen, keine Matrizen. Daher musste ich die Matrizen in ein ImageData-Objekt umwandeln, bevor ich sie in das Canvas zeichnen konnte.
+Um mehrere Bilder in einen Canvas zu zeichnen, musste ich die Größe der Bilder anpassen, damit sie in ein Grid passen. Dafür habe ich die Funktion \texttt{cv.resize()} verwendet. Anschließend müssen die Matrizen zuerst in ein temporäres Canvas gezeichnet werden, bevor sie in das Haupt-Canvas gezeichnet werden können. Die Funktion \texttt{drawImage()} von Canvas kann nur Bilder zeichnen, keine Matrizen. Daher musste ich die Matrizen in ein ImageData-Objekt umwandeln, bevor ich sie in das Canvas zeichnen konnte.
 \subsection{Erste Ergebnisse}
-Es hat sich gezeigt, dass der Vergleich der Vorlagen prinzipiell funktionieren kann. Jedoch ist die Genauigkeit  noch nicht zufriedenstellend. Münzen können zwar grob in die richtige Kategorie eingeordnet werden (sprich 1-2-5 Cent Münzen und 10-20-50 Cent Münzen), jedoch ist die Unterscheidung innerhalb dieser Kategorien nicht funktional. So werden aktuell nur maximal die Hälfte der Münzen korrekt zugeordnet.
+Es hat sich gezeigt, dass der Vergleich der Vorlagen prinzipiell funktionieren kann. Jedoch ist die Genauigkeit  noch nicht zufriedenstellend. Münzen können aktuell zwar grob in die richtige Kategorie eingeordnet werden (sprich 1-2-5 Cent Münzen und 10-20-50 Cent Münzen), jedoch ist die Unterscheidung innerhalb dieser Kategorien nicht funktional. So werden aktuell nur maximal die Hälfte der Münzen korrekt zugeordnet.
 
 Es scheint, als wären die Informationen der Ziffern auf den Münzen nicht ausreichend, um eine genaue Klassifizierung zu ermöglichen. Die Farbe einer Münze hat im Gegensatz dazu einen relativ großen Einfluss auf das Ergebnis. So werden Münzen meist der korrekten Farbkategorie zugeordnet, jedoch nicht derm korrekten Wert. Dies ist ein Hinweis darauf, dass die Farbinformationen der Münzen stärker gewichtet werden als die Forminformationen. Da sich Münzen innerhalb einer Kategorie (z.B. 1-2-5 Cent Münzen) jedoch nur in der Größe und ihrer Ziffer optisch unterscheiden, ist es schwierig eine weitere Methode der Klassifizierung zu finden. Ein Prüfen der Größe würde in meinem Anwendungsfall nicht funktionieren, da sowohl der Abstand zur Kamera als auch die Position der Münzen im Bild variabel sind. 
 
 Eine Möglichkeit die Genauigkeit zu erhöhen wäre es, den störenden Faktor der Farbinformationen zu eliminieren, und stattdessen nur Vorlagen zu verwenden, welche nur die notwendigen Informationen enthalten. Dies könnte z.B. durch das Erstellen von Kantenbildern der Münzen erreicht werden. Solche Bilder wie sie vom Canny-Algorithmus erstellt werden, enthalten nur die Kanten des Ausgangsbildes und keine Farbinformationen, da sie rein als Schwarz-Weiß-Bilder vorliegen. Diese Kantenbilder könnten dann an Stelle der aktuellen Farbbilder als Vorlagen verwendet werden.
 
-Jedoch gibt es noch ein weiteres Problem: die Rotation. Bereits eine kleine Drehung des Ausgangsbildes verursacht große Unterschiede in der Übereinstimmung. Das Template Matching in openCV berechnet standardmäßig nur die Übereinstimmung für das Template in der gleichen Rotation wie das Bild. Dies ist ein Problem, da die Münzen im Kamerabild in unterschiedlichen Rotationen vorkommen können. Eine Möglichkeit dieses Problem zu lösen wäre es, das Template in verschiedenen Rotationen zu speichern und für jede Rotation die Übereinstimmung zu berechnen. Dies würde jedoch die Anzahl der Vorlagen vervielfachen und einen unverhältnismäßig hohen Aufwand bedeuten. Eine andere Möglichkeit wäre es, das Ausgangsbild mehrfach zu rotieren und für jede Rotation die Übereinstimmung zu den Vorlagen berechnen. So wäre bei ausreichend kleingranularer Rotation sichergestellt, dass jede Münze mindestens einmal eine ähnliche Ausrichtung wie das zutreffende Template hat. Dies würde jedoch die Rechenzeit signifikant erhöhen, da bedeutend mehr Berechnungen pro Münze durchgeführt werden müssten. Zudem braucht es dafür eine Möglichkeit, alle Zwischenergebnisse der Rotationen zu speichern, um anschließend das beste Ergebnis zu wählen.
+Jedoch gibt es noch ein weiteres Problem: die Rotation. Bereits eine kleine Drehung des Ausgangsbildes verursacht große Unterschiede in der Übereinstimmung. Das Template Matching in openCV berechnet standardmäßig nur die Übereinstimmung für das Template in der gleichen Rotation wie das Bild. Dies ist ein Problem, da die Münzen im Kamerabild in unterschiedlichen Rotationen vorkommen können. Eine Möglichkeit dieses Problem zu lösen wäre es, das Template in verschiedenen Rotationen zu speichern und für jede Rotation die Übereinstimmung zu berechnen. Dies würde jedoch die Anzahl der Vorlagen vervielfachen und einen unverhältnismäßig hohen Aufwand bedeuten. Eine andere Möglichkeit wäre es, das Ausgangsbild mehrfach zu rotieren und für jede Rotation die Übereinstimmung zu den Vorlagen berechnen. So wäre bei ausreichend kleinen Rotationsschritten sichergestellt, dass jede Münze mindestens einmal eine ähnliche Ausrichtung wie das zutreffende Template hat. Dies würde jedoch die Rechenzeit signifikant erhöhen, da bedeutend mehr Berechnungen pro Münze durchgeführt werden müssten. Zudem braucht es dafür eine Möglichkeit, alle Zwischenergebnisse der Rotationen zu speichern, um anschließend das beste Ergebnis zu wählen.
+
+Alles in allem ein durchwachsenes Ergebnis. Die Klassifizierung der Münzen ist noch nicht zufriedenstellend, jedoch gibt es noch viele Möglichkeiten, die Genauigkeit zu erhöhen. Ich werde mich in den nächsten Tagen mit diesen Möglichkeiten beschäftigen und einige Änderungen vornehmen. Hoffentlich kann ich so die Genauigkeit der Klassifizierung noch um einiges erhöhen. 

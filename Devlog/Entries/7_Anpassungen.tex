@@ -1,7 +1,7 @@
 \section{Anpassungen}
 
 \subsection{Kantenerkennung}
-Die Kantenerkennung ist ein häufig genutztes Verfahren in der Bildverarbeitung, um Objekte beziehunsweise geometrische Formen in Bildern zu erkennen. Sie ist häufig ein wichtiger Schritt für weitere Verarbeitungschritte. So möchte auch ich die Kantenerkennung nun nutzen, um für mein Template Matching bessere Ergebnisse zu erzielen
+Die Kantenerkennung ist ein häufig genutztes Verfahren in der Bildverarbeitung, um Objekte beziehungsweise geometrische Formen in Bildern zu erkennen. Sie ist häufig ein wichtiger Schritt für weitere Verarbeitungsschritte. So möchte auch ich die Kantenerkennung nun nutzen, um für mein Template Matching bessere Ergebnisse zu erzielen
 
 \subsubsection{Funktionsweise der Canny-Methode}.
 Um in openCV.js Kanten zu erkennen, muss der Canny-Algorithmus genutzt werden. Die Methode sieht wie folgt aus:
@@ -20,7 +20,7 @@ cv.Canny(src, dst, threshold1, threshold2, apertureSize, L2gradient);
 
 Wie man sieht, arbeitet der Canny-Algorithmus mit zwei Parameter \textit{threshold1} und \textit{threshold2}, die die Schwellenwerte für die Hysterese darstellen. Für beide Parameter gilt: ein zu niedriger Wert führt zu einer hohen Anzahl an Kanten, ein zu hoher Wert zu einer geringen Anzahl an Kanten. Um die richtigen Werte zu finden, bedarf es also wieder viel "trial and error". Meine zuvor erstellten Slider werden sich hierbei als sehr nützlich erweisen.
 \subsubsection{Die korrekten Parameter finden}
-Während ich versuchte die korrekten Parameter zu ermittelten stellte sich relativ schnell harus, dass ich für die Vorlagen andere Parameter benötige als für das Kamerabild. Die Vorlagen sind sehr klar und zudem deutlich größer als die Münzen im Kamerabild. Daher benötigen sie auch andere Schwellenwerte. Um dieses Problem zu lösen, habe ich für beide Anwendungsfälle ein eigene "SettingsObjekt" erstellt, in dem die Parameter für die Kantenerkennung gespeichert werden. So kann ich für die Vorlagen und das Kamerabild unterschiedliche Parameter nutzen:
+Während ich versuchte die korrekten Parameter zu ermittelten stellte sich relativ schnell heraus, dass ich für die Vorlagen andere Parameter benötige als für das Kamerabild. Die Vorlagen sind sehr klar und zudem deutlich größer als die Münzen im Kamerabild. Daher benötigen sie auch andere Schwellenwerte. Um dieses Problem zu lösen, habe ich für beide Anwendungsfälle ein eigene "SettingsObjekt" erstellt, in dem die Parameter für die Kantenerkennung gespeichert werden. So kann ich für die Vorlagen und das Kamerabild unterschiedliche Parameter nutzen:
 
 \begin{lstlisting}[style=JavaScript]
 class Settings{
@@ -95,10 +95,10 @@ Der Großteil der Funktion stellt lediglich sicher, dass alle Parameter einen g�
 
 Diese Methode wird nun sowohl für jede Vorlage als auch für das Kamerabild aufgerufen. Das Template Matching arbeitet somit nicht mehr mit den Originalbildern, sondern mit den Kantenbildern. Dies sollte die Ergebnisse deutlich verbessern.
 
-Wie dir vielleicht aufgefallen ist, habe ich in der Methode einen weiteren Check eingebaut, der überprüft, ob die übergebene Matrix ein gültiger Typ ist. Dies ist die Folge eines Problems, welches sich mir bei der Implemetierung des Template Matchings stellte. Dazu mehr im nächsten Abschnitt.
+Wie dir vielleicht aufgefallen ist, habe ich in der Methode einen weiteren Check eingebaut, der überprüft, ob die übergebene Matrix ein gültiger Typ ist. Dies ist die Folge eines Problems, welches sich mir bei der Implementierung des Template Matchings stellte. Dazu mehr im nächsten Abschnitt.
 
 \subsection{Neues Problem: Mat-Types}
-Wie mir ja bereits seit einiger Zeit bekannt ist, wird in openCV die Matrixklasse \textit{Mat} genutzt, um Bilder zu speichern und zu verarbeiten. Diese Klasse hat jedoch eine Eigenschaft, die mir bislang noch nicht aufgefallen ist: den \textit{type()}. So hat nämlich jede Matrix einen Typ, der angibt, wie die Matrix aufgebaut ist. Leider wird dieser Typ nur als Integer zurückgegeben, was zunächst nicht gerade hilfreich ist. Praktischerweise gibt es im Internt jedoch Listen, in denen die Integerwerte den Typen zugeordnet werden können. So habe ich mir eine solche Methode erstellt, die mir anhand des Integerwertes den Typ der Matrix zurückgibt:
+Wie mir ja bereits seit einiger Zeit bekannt ist, wird in openCV die Matrixklasse \textit{Mat} genutzt, um Bilder zu speichern und zu verarbeiten. Diese Klasse hat jedoch eine Eigenschaft, die mir bislang noch nicht aufgefallen ist: den \textit{type()}. So hat nämlich jede Matrix einen Typ, der angibt, wie die Matrix aufgebaut ist. Leider wird dieser Typ nur als Integer zurückgegeben, was zunächst nicht gerade hilfreich ist. Praktischerweise gibt es im Internet jedoch Listen, in denen die Integerwerte den Typen zugeordnet werden können. So habe ich mir eine solche Methode erstellt, die mir anhand des Integerwertes den Typ der Matrix zurückgibt:
 
 \begin{lstlisting}[style=JavaScript]
 function GetMatrixType(mat) {
@@ -152,7 +152,7 @@ Für das Rotieren benutze ich die cv-eigene Methode cv.warpAffine. Sie benötigt
 \end{itemize}
 
 \subsection{Asynchronität und Ladebalken}
-Da ich nun jeden Kreis merhfach drehe und die Kantenerkennung für jedes Bild neu berechnen muss, dauert der Prozess des Template Matchings sehr lange. Der ursprüngliche Plan, die Methode in einer Schleife aufzurufen und das Ergebnis in Echtzeit anzuzeigen, ist somit nicht mehr möglich. Daher habe ich mich dazu entschieden, die Methode asynchron zu machen und einen Ladebalken einzufügen, der den Fortschritt anzeigt.
+Da ich nun jeden Kreis mehrfach drehe und die Kantenerkennung für jedes Bild neu berechnen muss, dauert der Prozess des Template Matchings sehr lange. Der ursprüngliche Plan, die Methode in einer Schleife aufzurufen und das Ergebnis in Echtzeit anzuzeigen, ist somit nicht mehr möglich. Daher habe ich mich dazu entschieden, die Methode asynchron zu machen und einen Ladebalken einzufügen, der den Fortschritt anzeigt.
 
 Ein Ladebalken kann in OpenCV relativ leicht mittels einigen Rechtecken erstellt werden:
 
