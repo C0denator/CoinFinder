@@ -101,7 +101,7 @@ Zunächst wird die Anzahl der Iterationen für die Rotation festgelegt. In meine
 
 Nachdem eine Matrix mit dem rotierten Bild erstellt wurde, wird diese mit allen Templates verglichen. Dafür wird über alle Templates iteriert und für jedes Template die Funktion \texttt{cv.matchTemplate} aufgerufen. Die Funktion gibt eine Matrix zurück, in der die Übereinstimmungswerte für das Template und das Bild enthalten sind. Diese Matrix wird dann nach dem höchsten und niedrigsten Wert durchsucht und in einem Array gespeichert.
 
-Für die Speicherung der Ergebnisse wird ein Array \texttt{allResults} erstellt, welches Objekte der folgenden Klasse enthält:
+Für die speicherung der Ergebnisse wird ein Array \texttt{allResults} erstellt, welches Objekte der folgenden Klasse enthält:
 
 \begin{lstlisting}[style=JavaScript]
 class Result {
@@ -163,11 +163,15 @@ Nachdem ich für jede Einstellung 5 verschiedene Bilder aufgenommen ung geprüft
     \item \textbf{360 CCOEFF\_NORMED} - Durchschnittliche Erfolgsrate: 62,5\%
 \end{itemize}
 
-Die Erfolgsrate ist dabei definiert als die Anzahl der Durchläufe, bei denen die Münze korrekt klassifiziert wurde, geteilt durch die Gesamtanzahl der Durchläufe. Die Ergebnisse sind in Abbildung \ref{fig:SuccessRate} dargestellt.
+Die Erfolgsrate ist dabei definiert als die Anzahl der Durchläufe, bei denen die Münze korrekt klassifiziert wurde, geteilt durch die Gesamtanzahl der Durchläufe.
+
+Anschließend habe ich für die Einstellungen mit dem besten Ergebnis (180 CCOEFF\_NORMED) eine weitere Testreihe mit 10 Bildern durchgeführt, um etwas aussagekräftigere Werte zu erhalten. Jedes Bild hatte wie in der vorherigen Testreihe wieder alle verfügbaren Euromünzen in einem zufälligen Winkel abgebildet. Die Ergebnisse sind in Abbildung \ref{fig:SuccessRate} dargestellt:
 
 \begin{figure}[ht]
     \centering
     \caption{Erfolgsrate der Münzerkennung}
     \label{fig:SuccessRate}
-    \includegraphics[width=\textwidth]{../SuccessRate.png}  
+    \includegraphics[width=\textwidth]{../SuccessRate2.png}  
 \end{figure}
+
+Wie man sofort sieht, gibt es starke Unterschiede in der Erfolgsrate der einzelnen Münzen. Während die 2-Euro Münze in fast allen Fällen korrekt erkannt wurde, lag die Erfolgsquote für die 1 Euro Münze nur bei etwa 30\%. Neben der 2-Euro Münze werden auch die 20-Cent, 2-Cent und 1-Cent Münzen in den meisten Fällen (>50\%) korrekt erkannt. Dagegen werden die 1-Euro, 50-Cent und 5-Cent Münzen nur in etwa 30-40\% der Fälle korrekt erkannt. Für die 10-Cent Münze liegt die Erfolgsrate bei etwa 50\%. Insgesamt beträgt die durchschnittliche Erfolgsrate für alle Münzen somit 62,5\%.
