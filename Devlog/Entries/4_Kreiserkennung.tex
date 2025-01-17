@@ -1,7 +1,8 @@
 \section{Kreiserkennung}
+Die Kreiserkennung ist fertig! Und es war tatsächlich einfacher als gedacht. Die größte Herausforderung ist es gewesen, die optimalen Parameter für die Kreiserkennung zu finden. Aber mit meinen neuen Slidern war das auch kein Problem. Mehr dazu weiter unten.
 
 \subsection{Funktionsweise der HoughCircles-Methode}
-Das Implementieren der Kreiserkennung in openCV.js war tatsächlich ziemlich einfach. Alles was es grundsätzlich dafür braucht ist diese Methode:
+Um Kreie in einem Bild zu erkennen, gibt es in OpenCV.js praktischerweise bereits eine fertige Methode, die dies für uns übernimmt. Diese Methode heißt \texttt{cv.HoughCircles} und verwendet die Hough-Transformation, um Kreise in einem Bild zu finden. Die Methode hat folgende Signatur:
 
 \begin{lstlisting}[style=JavaScript]
 cv.HoughCircles(image, circles, method, dp, minDist, param1, param2, minRadius, maxRadius);
@@ -16,9 +17,11 @@ Gehen wir erstmal die einzelnen Parameter durch:
     \item \textbf{method} - Dies ist eine Konstante, die angibt, welche Methode zur Kreiserkennung verwendet werden soll. In openCV.js gibt es aktuell nur eine Methode, die verwendet werden kann, nämlich \texttt{cv.HOUGH\_GRADIENT}.
     \item \textbf{dp} - Hier wird es leider etwas komplizierter. Der Parameter \texttt{dp} ist ein inverser Skalierungsfaktor, der die Genauigkeit der Kreiserkennung beeinflusst. Ein Wert von 1 bedeutet, dass die Auflösung des Eingabebildes verwendet wird. Ein Wert von 2 bedeutet, dass das Eingabebild halb so groß wie das Originalbild ist. Je kleiner der Wert, desto genauer ist die Kreiserkennung, aber auch desto langsamer. 
     \item \textbf{minDist} - Dieser Parameter gibt den minimalen Abstand zwischen den Mittelpunkten der gefundenen Kreise an. Dies ist sehr nützlich um die Anzahl an falschen Positiven zu reduzieren. 
-    \item \textbf{param1} - Dieser Parameter ist spezifisch für die Methode \texttt{cv.HOUGH\_GRADIENT}. Es handelt sich hier um den oberen Schwellwert für die Kantenerkennung, welche intern durchgeführt wird. Der untere Schwellwert ist stets die Hälfte dieses Wertes.
+    \item \textbf{param1} - Dieser Parameter ist spezifisch für die Methode \texttt{cv.HOUGH\_GRADIENT}. Es handelt sich hier um den oberen Schwellwert für die Kantenerkennung, welche intern vor dem Suchen nach Kreisen durchgeführt wird. Der untere Schwellwert ist stets die Hälfte dieses Wertes.
     \item \textbf{param2} - Dieser Parameter ist ebenfalls spezifisch für die Methode \texttt{cv.HOUGH\_GRADIENT}. Er ist der Schwellwert für die Kreiserkennung. Je kleiner der Wert, desto empfindlicher ist die Kreiserkennung, d.h. ein Kreis muss weniger stark ausgeprägt sein, um trotzdem als solcher erkannt zu werden. Dies bedeutet jedoch auch, dass das mit kleinerem Wert das Risiko für falsche Kreise steigt.
 \end{itemize}
+
+Es lässt sich leider nicht im Vorhinein sagen, welche Werte für die Parameter \texttt{dp}, \texttt{minDist}, \texttt{param1} und \texttt{param2} optimal sind. Diese Werte hängen stark von Bild, Licht und Kamera ab. Nur mit genau abgestimmten Werte kann eine gute und verlässliche Kreiserkennung erreicht werden.
 
 Der Einfachheit halber habe ich eine eigene Methode nur für das Finden von Kreisen geschrieben, die die Methode \texttt{cv.HoughCircles} verwendet. Diese Methode gibt dann ein Array von Kreis-Objekten zurück, die ich dann weiterverarbeiten kann. Die Methode sieht so aus:
 
@@ -54,6 +57,8 @@ function FindCircles(inputMat, guiMat){
 }
 \end{lstlisting}
 
+Man beachte, dass ich ein Array vom Typ \texttt{[Circle]} zurückgebe. Der Einfachheit halber extrahiere ich die gefundenen Kreise aus der \texttt{circlesMat}-Matrix und speichere sie in einem Array von Kreis-Objekten. Dies macht die weitere Verarbeitung der Kreise deutlich einfacher.
+
 Auch für das Anzeigen der Kreise habe ich eine ausgelagerte Methode geschrieben. Dies wäre eigentlich nicht nötig gewesen, da für das Zeichnen von Kreisen nur eine einziger Methodenaufruf benötigt wird. Ich habe die Methode dennoch geschrieben, um die Lesbarkeit des Codes zu erhöhen. Die Methode sieht so aus:
 
 \begin{lstlisting}[style=JavaScript]
@@ -69,9 +74,9 @@ function DrawCircle(circle, guiMat, color){
 }
 \end{lstlisting}
 
-Bei den Parametern \texttt{dp}, \texttt{param1} und \texttt{param2} stellte sich mir nun die Frage, welche Werte ich hier verwenden soll. Eine pauschale Antwort darauf gibt es nicht, da die optimalen Werte stark vom Bild, vom Verwendungszweck und in meinem Beispiel auch von der Kamera abhängen.
+Bei den Parametern \texttt{dp}, \texttt{param1} und \texttt{param2} stellte sich mir nun die Frage, welche Werte ich hier verwenden soll. Eine pauschale Antwort darauf gibt es nicht, da die optimalen Werte wie bereits erwähnt stark vom Bild, vom Verwendungszweck und in meinem Beispiel auch von der Kamera abhängen.
 
-Meine nächste Aufgabe war es nun, für meinen Anwendungsfall die optimalen Werte für diese Parameter zu finden. Hierfür habe ich den Mainloop so angepasst, dass in einer Schleife die Kreiserkennung auf dem aktuellen Kamera-Frame durchgeführt wird. Die gefundenen Kreise werden dann auf eine separate "GUI-Matrix" gezeichnet, die dann auf dem Bildschirm angezeigt wird. Durch das Verändern der Parameter per Slider konnte ich so direkt die Auswirkungen auf die Kreiserkennung sehen.
+Um nun die passenden Werte ausfindig zu machen, habe ich den Mainloop so angepasst, dass in einer Schleife die Kreiserkennung auf dem aktuellen Kamera-Frame durchgeführt wird. Die gefundenen Kreise werden dann auf eine separate "GUI-Matrix" gezeichnet, die dann auf dem Bildschirm angezeigt wird. Durch das Verändern der Parameter per Slider konnte ich so direkt die Auswirkungen auf die Kreiserkennung sehen.
 
 Letztendlich habe ich bei diesen Werten sehr gute Ergebnisse erzielt:
 \begin{itemize}
@@ -83,6 +88,6 @@ Letztendlich habe ich bei diesen Werten sehr gute Ergebnisse erzielt:
     \item \texttt{maxRadius} = 67
 \end{itemize}
 
-Dies bedeutet nicht, dass diese Werte auch für andere Anwendungsfälle optimal sind. Je nach Lichtverhältnissen, Kamerawinkel und Bildqualität können diese Werte stark variieren. Es ist also sehr wichtig, die Parameter für die Kreiserkennung an jeden Anwendungsfall individuell anzupassen.
+Dies bedeutet nicht, dass diese Werte auch für andere Anwendungsfälle optimal sind. Je nach Lichtverhältnissen, Kamerawinkel und Bildqualität können diese Werte stark variieren. Wenn du also die Kreiserkennung in deinem eigenen Projekt verwenden möchtest, empfehle ich dir wärmstens, die Parameter selbst zu testen und anzupassen.
 
-\subsection{Buffering der Kreise}
+Mit der Kreiserkennung fertig implementiert, sind wir dem Ziel, Münzen zu erkennen, ein ganzes Stück näher gekommen. Jetzt wo wir Kreise (und somit auch Münzen) im Bild erkennen können, können wir uns daran machen, die Münzen zu klassifizieren. Dazu aber mehr beim nächsten Eintrag.
