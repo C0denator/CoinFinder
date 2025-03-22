@@ -1,9 +1,9 @@
 \section{Anpassungen}
 
 \subsection{Kantenerkennung}
-Die Kantenerkennung ist ein häufig genutztes Verfahren in der Bildverarbeitung, um Objekte beziehungsweise geometrische Formen in Bildern zu erkennen. Sie ist häufig ein wichtiger Schritt für weitere Verarbeitungsschritte. So möchte auch ich die Kantenerkennung nun nutzen, um für mein Template Matching bessere Ergebnisse zu erzielen
+Die Kantenerkennung ist ein häufig genutztes Verfahren in der Bildverarbeitung, um Objekte beziehungsweise geometrische Formen in Bildern zu erkennen. Sie ist häufig ein wichtiger Schritt für weitere Verarbeitungsschritte. So möchte auch ich die Kantenerkennung nun nutzen, um für mein Template Matching bessere Ergebnisse zu erzielen.
 
-\subsubsection{Funktionsweise der Canny-Methode}.
+\subsubsection{Funktionsweise der Canny-Methode}
 Um in openCV.js Kanten zu erkennen, muss der Canny-Algorithmus genutzt werden. Die Methode sieht wie folgt aus:
 \begin{lstlisting}[style=JavaScript]
 cv.Canny(src, dst, threshold1, threshold2, apertureSize, L2gradient);
