@@ -181,7 +181,7 @@ function MatchTemplates(src, circle){
 }
 \end{lstlisting}
 
-Innerhalb des main-loops wird diese Funktion nun für jeden gefundenen Kreis aufgerufen. Der Parameter "src" ist dabei eine ausgeschnittene Region des Bildes, in der sich der Kreis befindet. Der Parameter "circle" ist das Circle-Objekt, in dem die Informationen zum Kreis gespeichert sind. Die Funktion iteriert anschließend über alle Vorlagen und berechnet die Übereinstimmung für jede Vorlage. Hierbei muss beachtet werden, dass Vorlage und das zu prüfende Bild vorher auf die selbe Größe gebracht werden müssen. Die Ergebnisse werden in einem Array gespeichert und anschließend sortiert. Das beste Ergebnis wird dann im Circle-Objekt gespeichert.
+Innerhalb des main-loops wird diese Funktion nun für jeden gefundenen Kreis aufgerufen. Der Parameter \glqq src\grqq{} ist dabei eine ausgeschnittene Region des Bildes, in der sich der Kreis befindet. Der Parameter \glqq circle\grqq{} ist das Circle-Objekt, in dem die Informationen zum Kreis gespeichert sind. Die Funktion iteriert anschließend über alle Vorlagen und berechnet die Übereinstimmung für jede Vorlage. Hierbei muss beachtet werden, dass Vorlage und das zu prüfende Bild vorher auf die selbe Größe gebracht werden müssen. Die Ergebnisse werden in einem Array gespeichert und anschließend sortiert. Das beste Ergebnis wird dann im Circle-Objekt gespeichert.
 
 Du fragst dich bestimmt wie ich an die ausgeschnittene Matrix eines jeden Kreises komme. Dafür habe ich in der \texttt{Circle}-Klasse eine eigene Methode geschrieben, die die ausgeschnittene Region des Bildes zurückgibt. Diese Methode sieht so aus:
 

@@ -20,7 +20,7 @@ cv.Canny(src, dst, threshold1, threshold2, apertureSize, L2gradient);
 
 Wie man sieht, arbeitet der Canny-Algorithmus mit zwei Parameter \textit{threshold1} und \textit{threshold2}, die die Schwellenwerte für die Hysterese darstellen. Für beide Parameter gilt: ein zu niedriger Wert führt zu einer hohen Anzahl an Kanten, ein zu hoher Wert zu einer geringen Anzahl an Kanten. Um die richtigen Werte zu finden, bedarf es also wieder viel "trial and error". Meine zuvor erstellten Slider werden sich hierbei als sehr nützlich erweisen.
 \subsubsection{Die korrekten Parameter finden}
-Während ich versuchte die korrekten Parameter zu ermittelten stellte sich relativ schnell heraus, dass ich für die Vorlagen andere Parameter benötige als für das Kamerabild. Die Vorlagen sind sehr klar und zudem deutlich größer als die Münzen im Kamerabild. Daher benötigen sie auch andere Schwellenwerte. Um dieses Problem zu lösen, habe ich für beide Anwendungsfälle ein eigene "SettingsObjekt" erstellt, in dem die Parameter für die Kantenerkennung gespeichert werden. So kann ich für die Vorlagen und das Kamerabild unterschiedliche Parameter nutzen:
+Während ich versuchte die korrekten Parameter zu ermittelten stellte sich relativ schnell heraus, dass ich für die Vorlagen andere Parameter benötige als für das Kamerabild. Die Vorlagen sind sehr klar und zudem deutlich größer als die Münzen im Kamerabild. Daher benötigen sie auch andere Schwellenwerte. Um dieses Problem zu lösen, habe ich für beide Anwendungsfälle ein eigenes \glqq SettingsObjekt\grqq{} erstellt, in dem die Parameter für die Kantenerkennung gespeichert werden. So kann ich für die Vorlagen und das Kamerabild unterschiedliche Parameter nutzen:
 
 \begin{lstlisting}[style=JavaScript]
 class Settings{
