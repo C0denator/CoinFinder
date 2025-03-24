@@ -76,7 +76,7 @@ function DrawCircle(circle, guiMat, color){
 
 Bei den Parametern \texttt{dp}, \texttt{param1} und \texttt{param2} stellte sich mir nun die Frage, welche Werte ich hier verwenden soll. Eine pauschale Antwort darauf gibt es nicht, da die optimalen Werte wie bereits erwähnt stark vom Bild, vom Verwendungszweck und in meinem Beispiel auch von der Kamera abhängen.
 
-Um nun die passenden Werte ausfindig zu machen, habe ich den Mainloop so angepasst, dass in einer Schleife die Kreiserkennung auf dem aktuellen Kamera-Frame durchgeführt wird. Die gefundenen Kreise werden dann auf eine separate "GUI-Matrix" gezeichnet, die dann auf dem Bildschirm angezeigt wird. Durch das Verändern der Parameter per Slider konnte ich so direkt die Auswirkungen auf die Kreiserkennung sehen.
+Um nun die passenden Werte ausfindig zu machen, habe ich den Mainloop so angepasst, dass in einer Schleife die Kreiserkennung auf dem aktuellen Kamera-Frame durchgeführt wird. Die gefundenen Kreise werden dann auf eine separate \glqq GUI-Matrix\grqq{} gezeichnet, die dann auf dem Bildschirm angezeigt wird. Durch das Verändern der Parameter per Slider konnte ich so direkt die Auswirkungen auf die Kreiserkennung sehen.
 
 Letztendlich habe ich bei diesen Werten sehr gute Ergebnisse erzielt:
 \begin{itemize}

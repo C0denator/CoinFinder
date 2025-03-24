@@ -94,7 +94,7 @@ let COINS = {
 }    
 \end{lstlisting}
 
-Diese Datenstruktur kann ich nun verwenden, um die Histogramme zu speichern und ihnen eine Münze zuzuordnen. In der folgenden Methode iteriere ich über jede Münze und lese das Vorlagenbild ein. Anschließend erstelle ich aus diesem ein Hisogramm und speichere es in der globalen Datenstruktur. Die Methode sieht so aus:
+Diese Datenstruktur kann ich nun verwenden, um die Histogramme zu speichern und ihnen eine Münze zuzuordnen. In der folgenden Methode iteriere ich über jede Münze und lese das Vorlagenbild ein. Anschließend erstelle ich aus diesem ein Histogramm und speichere es in der globalen Datenstruktur. Die Methode sieht so aus:
 
 \begin{lstlisting}[style=JavaScript]
 function InitHists(){
@@ -155,7 +155,7 @@ function InitHists(){
 }
 \end{lstlisting}
 
-Wie man sehen kann erstelle ich testweise erstmal für jeden Farbkanal ein eigenes Histogramm, um später herauszufinden welcher Kanal am besten geeignet ist. Zusätzlich normalisiere ich alle Hisogramme, um "Lücken" in den Histogrammen zu vermeiden. Dafür kann die Funktion \textit{cv.normalize} verwendet werden, welche in meinem Beispiel die Histogramme direkt im Speicher überschreibt.
+Wie man sehen kann erstelle ich testweise für jeden Farbkanal ein eigenes Histogramm, um später herauszufinden welcher Kanal am besten geeignet ist. Zusätzlich normalisiere ich alle Histogramme, um "Lücken" in den Histogrammen zu vermeiden. Dafür kann die Funktion \textit{cv.normalize} verwendet werden, welche in meinem Beispiel die Histogramme direkt im Speicher überschreibt.
 
 \subsection{Vergleich der Histogramme}
 Nun brauchen einen Weg jene vorgespeicherten Histogramme mit den Histogrammen der Kamerabilder zu vergleichen. Dafür habe ich eine Methode \textit{CompareHists} erstellt, die die Histogramme vergleicht und die Münze mit dem geringsten Unterschied zurückgibt. Die Methode sieht so aus:
@@ -163,4 +163,4 @@ Nun brauchen einen Weg jene vorgespeicherten Histogramme mit den Histogrammen de
 \subsection{Erste Ergebnisse}
 Es hat sich gezeigt, dass der Vergleich von Histogrammen prinzipiell funktioniert. Allerdings ist die Genauigkeit noch nicht zufriedenstellend. Münzen können zwar grob in die richtige Kategorie eingeordnet werden (sprich 1-2-5 Cent Münzen und 10-20-50 Cent Münzen), jedoch ist die Unterscheidung innerhalb dieser Kategorien nicht funktional.
 
-Es scheint, dass die Ziffern der Euromünzen nicht ausreichend in den Histogrammen repräsentiert sind. Die Histogramme der Münzen sind sich zu ähnlich, sodass die Unterschiede nicht ausreichend hervorgehoben werden. Ich muss mich also nach weiteren Mölichkeiten umsehen, um Münzen zuverlässig und eindeutig zu klassifizieren.
+Es scheint, dass die Ziffern der Euromünzen nicht ausreichend in den Histogrammen repräsentiert sind. Die Histogramme der Münzen sind sich zu ähnlich, sodass die Unterschiede nicht ausreichend hervorgehoben werden. Ich muss mich also nach weiteren Möglichkeiten umsehen, um Münzen zuverlässig und eindeutig zu klassifizieren.
