@@ -101,7 +101,7 @@ Zunächst wird die Anzahl der Iterationen für die Rotation festgelegt. In meine
 
 Nachdem eine Matrix mit dem rotierten Bild erstellt wurde, wird diese mit allen Templates verglichen. Dafür wird über alle Templates iteriert und für jedes Template die Funktion \texttt{cv.matchTemplate} aufgerufen. Die Funktion gibt eine Matrix zurück, in der die Übereinstimmungswerte für das Template und das Bild enthalten sind. Diese Matrix wird dann nach dem höchsten und niedrigsten Wert durchsucht und in einem Array gespeichert.
 
-Für die speicherung der Ergebnisse wird ein Array \texttt{allResults} erstellt, welches Objekte der folgenden Klasse enthält:
+Für die Speicherung der Ergebnisse wird ein Array \texttt{allResults} erstellt, welches Objekte der folgenden Klasse enthält:
 
 \begin{lstlisting}[style=JavaScript]
 class Result {
